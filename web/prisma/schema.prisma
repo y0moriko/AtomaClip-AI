@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  name              String?
+  email             String    @unique
+  subscriptionTier  String    @default("free") // 'free' or 'pro'
+  slackWebhookUrl   String?
+  insights          Insight[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("users")
+}
+
+model Insight {
+  id            String   @id @default(uuid())
+  content       String   @db.Text // The actual highlighted text (Atomic Clip)
+  contextBefore String?  @db.Text // Ghost Paragraph before
+  contextAfter  String?  @db.Text // Ghost Paragraph after
+  userNote      String?  @db.Text // The "Why" captured in the pop-up
+  sourceUrl     String
+  pageTitle     String?
+  isFavorite    Boolean  @default(false)
+  
+  // Semantic Search
+  embedding     Unsupported("vector(768)")?
+  
+  // Array of tags for easier querying in some cases
+  tags          String[] @default([])
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("insights")
+}

@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "AtomaClip AI",
+  "version": "1.0",
+  "description": "Capture atomic insights with AI-powered semantic search.",
+  "permissions": ["contextMenus", "activeTab", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"],
+      "css": ["content_styles.css"]
+    }
+  ],
+  "host_permissions": ["http://localhost:3000/*", "https://atomaclip.vercel.app/*"],
+  "action": {
+    "default_title": "AtomaClip AI"
+  }
+}

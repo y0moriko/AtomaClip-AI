@@ -1,0 +1,22 @@
+
+**Subject: 🚧 Progress Update: AtomaClip AI (MVP Stage)**
+
+Hey everyone! 👋 I wanted to share a quick progress report on **AtomaClip AI**.
+
+**The Goal:** 
+Stop "Bookmark Hoarding" by letting users save specific insights, not just URLs.
+
+**Current Status (Built in just 4 hours!):**
+✅ **Chrome Extension:** Successfully built a Manifest V3 extension that captures highlighted text and page metadata via a simple right-click.
+✅ **The Dashboard:** A minimalist Next.js gallery is live, featuring "Atomic Cards" with serif typography optimized for research readability.
+✅ **The Database:** Fully connected to Supabase and Prisma with a scalable schema ready for high-velocity research.
+
+**Current Hurdles:**
+I’ve spent the last hour wrestling with some Google AI SDK naming quirks and model availability (Gemini 1.5 vs. 2.0). Because of this, the AI auto-tagging and semantic search are still in "beta" and might be a bit unstable in this demo. Apologies that it’s not 100% polished yet, but the core **"Atomic Loop" (Clip → Save → View)** is fully functional!
+
+**What's Next:**
+Once I've launched this initial version, I will proceed to the next challenge: **Inviting my target users** (content creators and researchers) to the platform. My goal is to discover firsthand whether AtomaClip effectively solves the "Bookmark Hoarding" problem and actually kills the need for 40+ open tabs.
+
+**Demo Video (Loom):** 
+https://www.loom.com/share/8ed6b3a054c84b5f9aacd176bf3dfd78
+***
