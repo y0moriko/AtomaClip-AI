@@ -53,9 +53,11 @@ export async function POST(req: Request) {
     const embeddingResult = await hf.featureExtraction({
       model: "sentence-transformers/all-mpnet-base-v2",
       inputs: query
-    });
+    }) as unknown;
 
-    let embedding = Array.isArray(embeddingResult) ? embeddingResult.map(Number) : embeddingResult[0]?.map(Number);
+    let embedding = Array.isArray(embeddingResult) 
+      ? (embeddingResult as number[]).map(Number) 
+      : (embeddingResult as any)?.[0]?.map(Number);
 
     if (!embedding) {
       return NextResponse.json({ error: "Failed to generate embedding" }, { status: 500, headers: corsHeaders });
