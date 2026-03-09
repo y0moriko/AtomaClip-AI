@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { HfInference } from "@huggingface/inference";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -9,6 +11,25 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+
+async function getUser(cookies: any) {
+  const cookieStore = cookies()
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  return user
+}
 
 async function getAiTags(content: string): Promise<string[]> {
   try {
@@ -52,6 +73,13 @@ export async function POST(req: Request) {
   let aiStatus = "success";
   
   try {
+    const cookieStore = cookies()
+    const user = await getUser(cookieStore)
+    
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+    }
+
     const body = await req.json();
     const { 
       content, 
@@ -64,6 +92,17 @@ export async function POST(req: Request) {
 
     if (!content) {
       return NextResponse.json({ error: "Content is required" }, { status: 400, headers: corsHeaders });
+    }
+
+    let dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
+    
+    if (!dbUser) {
+      dbUser = await prisma.user.create({
+        data: {
+          email: user.email!,
+          name: user.user_metadata?.name || user.email?.split('@')[0],
+        }
+      })
     }
 
     let tags: string[] = ["research"];
@@ -83,13 +122,6 @@ export async function POST(req: Request) {
     }
 
     try {
-      let user = await prisma.user.findFirst({ where: { email: "test@atomaclip.ai" } });
-      if (!user) {
-        user = await prisma.user.create({
-          data: { email: "test@atomaclip.ai", name: "Test User" }
-        });
-      }
-
       const insightId = crypto.randomUUID();
       
       if (embedding) {
@@ -101,7 +133,7 @@ export async function POST(req: Request) {
               embedding
             ) VALUES (
               ${insightId}, ${content}, ${context_before}, ${context_after}, ${user_note},
-              ${source_url}, ${page_title}, ${tags}, ${user.id}, NOW(), NOW(),
+              ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, NOW(), NOW(),
               CAST(${embedding}::float8[] AS vector)
             )
           `;
@@ -123,7 +155,7 @@ export async function POST(req: Request) {
             sourceUrl: source_url,
             pageTitle: page_title,
             tags,
-            userId: user.id
+            userId: dbUser.id
           }
         });
       }

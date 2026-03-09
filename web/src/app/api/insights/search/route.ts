@@ -1,11 +1,39 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { HfInference } from "@huggingface/inference";
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 export async function POST(req: Request) {
   try {
+    const cookieStore = cookies()
+    
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
+          },
+        },
+      }
+    )
+
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
+    
+    if (!dbUser) {
+      return NextResponse.json([]);
+    }
+
     const { query } = await req.json();
 
     if (!query) {
@@ -30,6 +58,7 @@ export async function POST(req: Request) {
           0.3,
           10
         )
+        WHERE "userId" = ${dbUser.id}
       `;
       return NextResponse.json(insights);
     } catch (matchErr: any) {
