@@ -1,4 +1,14 @@
 // AtomaClip AI Content Script - Professional Nova Style
+const DEFAULT_API_URL = "https://atomaclip.vercel.app";
+
+async function getApiUrl() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(["apiUrl"], (result) => {
+      resolve(result.apiUrl || DEFAULT_API_URL);
+    });
+  });
+}
+
 function getGhostParagraphs() {
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return { before: "", after: "" };
@@ -52,8 +62,8 @@ function showWhyPopup(data) {
     };
 
     try {
-      // In production, this would be your Vercel URL
-      const response = await fetch("http://localhost:3000/api/insights/capture", {
+      const apiUrl = await getApiUrl();
+      const response = await fetch(`${apiUrl}/api/insights/capture`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(finalData)

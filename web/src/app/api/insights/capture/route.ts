@@ -105,6 +105,26 @@ export async function POST(req: Request) {
       })
     }
 
+    if (dbUser.subscriptionTier === "free") {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+
+      const monthlyCount = await prisma.insight.count({
+        where: {
+          userId: dbUser.id,
+          createdAt: { gte: startOfMonth }
+        }
+      });
+
+      if (monthlyCount >= 20) {
+        return NextResponse.json(
+          { error: "Free tier limit reached (20 clips/month). Upgrade to Pro for unlimited clips." },
+          { status: 403, headers: corsHeaders }
+        );
+      }
+    }
+
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
 

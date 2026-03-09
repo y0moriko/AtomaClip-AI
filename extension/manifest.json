@@ -14,8 +14,8 @@
       "css": ["content_styles.css"]
     }
   ],
-  "host_permissions": ["http://localhost:3000/*", "https://atomaclip.vercel.app/*"],
+  "host_permissions": ["<all_urls>"],
   "action": {
     "default_title": "AtomaClip AI"
-  }
-}
+  },
+  "options_page": "settings.html"
