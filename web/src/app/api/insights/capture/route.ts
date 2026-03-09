@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { GoogleGenerativeAI, TaskType } from "@google/generative-ai";
+import { HfInference } from "@huggingface/inference";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,56 +10,36 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-/**
- * Super-Resilient AI Tagging
- */
 async function getAiTags(content: string): Promise<string[]> {
-  const prompt = `Analyze this text and return 3-5 short lowercase tags separated by commas. No intro, no markdown.
-  Text: ${content}`;
-
-  // Chain of stable model strings
-  const modelChain = [
-    "gemini-1.5-flash", 
-    "gemini-1.5-flash-8b", 
-    "gemini-pro"
-  ];
-
-  for (const modelName of modelChain) {
-    try {
-      // Trying with models/ prefix as per Google's more explicit requirement in some SDK versions
-      const model = genAI.getGenerativeModel({ model: `models/${modelName}` });
-      const result = await model.generateContent(prompt);
-      let text = result.response.text();
-      
-      // Aggressive cleaning
-      text = text.replace(/```[a-z]*\n?/gi, "").replace(/```/g, "").replace(/`/g, "").replace(/#/g, "").trim();
-      
-      const tags = text.split(",").map(t => t.trim().toLowerCase()).filter(t => t.length > 0 && t.length < 25);
-      if (tags.length > 0) return tags;
-    } catch (err) {
-      console.warn(`Tagging failed for models/${modelName}`);
+  try {
+    const result = await hf.zeroShotClassification({
+      model: "facebook/bart-large-mnli",
+      inputs: content.slice(0, 500),
+      parameters: {
+        candidate_labels: ["technology", "science", "business", "health", "entertainment", "education", "politics", "sports", "news", "tips", "tutorial", "review", "opinion", "data", "research"]
+      }
+    });
+    
+    if (result && Array.isArray(result)) {
+      return result.map((r: any) => r.label.toLowerCase()).slice(0, 5);
     }
+  } catch (err) {
+    console.error("Tagging failed:", err);
   }
-  return ["research"]; // Rock-solid fallback
+  return ["research"];
 }
 
-/**
- * Super-Resilient Embedding
- */
 async function getAiEmbedding(content: string): Promise<number[] | null> {
-  const embeddingModels = ["text-embedding-004", "embedding-001"];
-  
-  for (const modelName of embeddingModels) {
-    try {
-      const model = genAI.getGenerativeModel({ model: `models/${modelName}` });
-      const result = await model.embedContent({
-        content: { parts: [{ text: content }] },
-        taskType: TaskType.RETRIEVAL_DOCUMENT,
-      });
-      if (result.embedding.values) return result.embedding.values;
-    } catch (err) {
-      console.error(`Embedding failed for models/${modelName}`);
-    }
+  try {
+    const result = await hf.featureExtraction({
+      model: "sentence-transformers/all-mpnet-base-v2",
+      inputs: content
+    });
+    
+    if (Array.isArray(result)) return result.map(Number);
+    if (result && Array.isArray(result[0])) return result[0].map(Number);
+  } catch (err) {
+    console.error("Embedding failed:", err);
   }
   return null;
 }
@@ -86,7 +66,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Content is required" }, { status: 400, headers: corsHeaders });
     }
 
-    // 1. AI Processing
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
 
@@ -103,7 +82,6 @@ export async function POST(req: Request) {
       aiStatus = "failed";
     }
 
-    // 2. Database Logic
     try {
       let user = await prisma.user.findFirst({ where: { email: "test@atomaclip.ai" } });
       if (!user) {
@@ -115,19 +93,26 @@ export async function POST(req: Request) {
       const insightId = crypto.randomUUID();
       
       if (embedding) {
-        // Use explicit float8 cast for Postgres vector
-        await prisma.$executeRaw`
-          INSERT INTO insights (
-            id, content, "contextBefore", "contextAfter", "userNote", 
-            "sourceUrl", "pageTitle", tags, "userId", "createdAt", "updatedAt",
-            embedding
-          ) VALUES (
-            ${insightId}, ${content}, ${context_before}, ${context_after}, ${user_note},
-            ${source_url}, ${page_title}, ${tags}, ${user.id}, NOW(), NOW(),
-            CAST(${embedding}::float8[] AS vector)
-          )
-        `;
-      } else {
+        try {
+          await prisma.$executeRaw`
+            INSERT INTO insights (
+              id, content, "contextBefore", "contextAfter", "userNote", 
+              "sourceUrl", "pageTitle", tags, "userId", "createdAt", "updatedAt",
+              embedding
+            ) VALUES (
+              ${insightId}, ${content}, ${context_before}, ${context_after}, ${user_note},
+              ${source_url}, ${page_title}, ${tags}, ${user.id}, NOW(), NOW(),
+              CAST(${embedding}::float8[] AS vector)
+            )
+          `;
+        } catch (embedError: any) {
+          console.error("Embedding insert failed, saving without:", embedError.message);
+          embedding = null;
+          aiStatus = "partial";
+        }
+      }
+
+      if (!embedding) {
         await prisma.insight.create({
           data: {
             id: insightId,
