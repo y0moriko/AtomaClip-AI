@@ -32,6 +32,7 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+*.tsbuildinfo
 
 # Prisma
 /web/prisma/dev.db

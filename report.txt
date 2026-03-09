@@ -3,7 +3,7 @@
 
 Hey everyone! 👋 I wanted to share a quick progress report on **AtomaClip AI**.
 
-**The Goal:** 
+**The Goal:**
 Stop "Bookmark Hoarding" by letting users save specific insights, not just URLs.
 
 **Current Status (Built in just 4 hours!):**
@@ -17,6 +17,6 @@ I’ve spent the last hour wrestling with some Google AI SDK naming quirks and m
 **What's Next:**
 Once I've launched this initial version, I will proceed to the next challenge: **Inviting my target users** (content creators and researchers) to the platform. My goal is to discover firsthand whether AtomaClip effectively solves the "Bookmark Hoarding" problem and actually kills the need for 40+ open tabs.
 
-**Demo Video (Loom):** 
+**Demo Video (Loom):**
 https://www.loom.com/share/8ed6b3a054c84b5f9aacd176bf3dfd78
 ***
