@@ -55,10 +55,13 @@ async function getAiEmbedding(content: string): Promise<number[] | null> {
     const result = await hf.featureExtraction({
       model: "sentence-transformers/all-mpnet-base-v2",
       inputs: content
-    }) as unknown;
+    });
     
-    if (Array.isArray(result)) return (result as number[]).map(Number);
-    if (result && Array.isArray((result as any)[0])) return (result as any)[0].map(Number);
+    const arr = result as unknown as (number | number[])[];
+    if (Array.isArray(arr)) {
+      if (typeof arr[0] === 'number') return arr as number[];
+      if (Array.isArray(arr[0])) return arr[0] as number[];
+    }
   } catch (err) {
     console.error("Embedding failed:", err);
   }
