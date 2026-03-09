@@ -10,7 +10,7 @@ export async function GET() {
     const skip = Math.floor(Math.random() * count);
     const randomInsight = await prisma.insight.findFirst({
       skip: skip,
-    });
+    }) as (any | null);
 
     if (!randomInsight || !randomInsight.embedding) {
       // Fallback if no embedding: just get latest 3
