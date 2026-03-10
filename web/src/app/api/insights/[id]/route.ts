@@ -1,9 +1,9 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-
-export const dynamic = 'force-dynamic';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
