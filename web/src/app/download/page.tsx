@@ -59,16 +59,15 @@ export default function DownloadPage() {
             <div className="border-t" />
 
             <div className="flex flex-col gap-3">
-              <a
-                href="/extension/manifest.json"
-                download
-                className="w-full"
-              >
-                <Button className="w-full gap-2" size="lg">
-                  <Download className="w-4 h-4" />
-                  Download Extension Files
-                </Button>
-              </a>
+            <a
+              href="/api/download-extension"
+              className="w-full"
+            >
+              <Button className="w-full gap-2" size="lg">
+                <Download className="w-4 h-4" />
+                Download Extension (ZIP)
+              </Button>
+            </a>
               <p className="text-xs text-center text-muted-foreground">
                 Click to download all extension files, then load the folder
               </p>
