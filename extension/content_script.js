@@ -1,5 +1,7 @@
 // AtomaClip AI Content Script - Professional Nova Style
 const DEFAULT_API_URL = "https://atomaclip-ai-production.up.railway.app";
+const SUPABASE_URL = "https://luoayfkneqjudcizrsoo.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1b2F5ZmtuZXFqdWRjaXpyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTEzMjAsImV4cCI6MjA4ODUyNzMyMH0.pKijxVzN5b7jdL1am3yIAeXezIx8_9NB1bDTzCHQNgY";
 
 async function getApiUrl() {
   return new Promise((resolve) => {
@@ -7,6 +9,25 @@ async function getApiUrl() {
       resolve(result.apiUrl || DEFAULT_API_URL);
     });
   });
+}
+
+async function getAuthHeader() {
+  try {
+    const apiUrl = await getApiUrl();
+    const response = await fetch(`${apiUrl}/api/session`, {
+      method: "GET",
+      credentials: "include"
+    });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.session) {
+        return { Authorization: `Bearer ${data.session.access_token}` };
+      }
+    }
+  } catch (e) {
+    console.log("Failed to get session:", e);
+  }
+  return {};
 }
 
 function getGhostParagraphs() {
