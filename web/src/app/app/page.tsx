@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useEffect } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
+import { supabase } from "@/lib/supabase"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -55,6 +57,18 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     fetchInsights()
+    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.access_token) {
+        let meta = document.querySelector('meta[name="atomaclip-token"]')
+        if (!meta) {
+          meta = document.createElement('meta')
+          meta.name = 'atomaclip-token'
+          document.head.appendChild(meta)
+        }
+        meta.content = session.access_token
+      }
+    })
   }, [])
 
   return (

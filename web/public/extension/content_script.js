@@ -13,19 +13,9 @@ async function getApiUrl() {
 }
 
 async function getAuthHeader() {
-  try {
-    const apiUrl = await getApiUrl();
-    const response = await fetch(`${apiUrl}/api/session`, {
-      method: "GET"
-    });
-    if (response.ok) {
-      const data = await response.json();
-      if (data.session) {
-        return { Authorization: `Bearer ${data.session.access_token}` };
-      }
-    }
-  } catch (e) {
-    console.log("Failed to get session:", e);
+  const meta = document.querySelector('meta[name="atomaclip-token"]')
+  if (meta && meta.content) {
+    return { Authorization: `Bearer ${meta.content}` }
   }
   return {};
 }
