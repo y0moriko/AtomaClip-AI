@@ -58,6 +58,30 @@
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
 }
 
+.atomaclip-save-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+
+.atomaclip-save-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.atomaclip-save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .atomaclip-footer {
   display: flex;
   align-items: center;
