@@ -1,0 +1,100 @@
+#atomaclip-popup {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  width: 340px;
+  background: #0f172a; /* Slate 900 */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  z-index: 2147483647;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: atomaclip-slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow: hidden;
+}
+
+@keyframes atomaclip-slideIn {
+  from { transform: translateX(100px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.atomaclip-container {
+  padding: 24px;
+}
+
+.atomaclip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.atomaclip-brand {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.atomaclip-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.atomaclip-input:focus {
+  border-color: #6366f1; /* Indigo 500 */
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+.atomaclip-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.atomaclip-ai-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #818cf8;
+  background: rgba(129, 140, 248, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.atomaclip-shimmer {
+  width: 8px;
+  height: 8px;
+  background: #818cf8;
+  border-radius: 50%;
+  animation: atomaclip-pulse 1.5s infinite;
+}
+
+@keyframes atomaclip-pulse {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+.atomaclip-success-check {
+  color: #10b981;
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

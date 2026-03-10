@@ -46,7 +46,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  if (user && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
+  if (user && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup' || req.nextUrl.pathname === '/download')) {
     return NextResponse.redirect(new URL('/app', req.url))
   }
 
@@ -54,5 +54,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/app/:path*', '/login', '/signup'],
+  matcher: ['/app/:path*', '/login', '/signup', '/download'],
 }

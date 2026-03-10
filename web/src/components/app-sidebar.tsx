@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bot,
   Command,
+  Download,
   Frame,
   GalleryVerticalEnd,
   Map,
@@ -87,6 +88,17 @@ const data = {
         {
           title: "AI Tagging",
           url: "#",
+        },
+      ],
+    },
+    {
+      title: "Extension",
+      url: "/download",
+      icon: Download,
+      items: [
+        {
+          title: "Download",
+          url: "/download",
         },
       ],
     },
