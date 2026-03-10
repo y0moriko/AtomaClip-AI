@@ -16,16 +16,25 @@ const corsHeaders = {
 };
 
 async function getUser(cookieStore: any, authHeader?: string) {
+  const options: any = {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    }
+  }
+
+  if (cookieStore) {
+    options.cookies = {
+      getAll() {
+        return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
+      },
+    }
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
-        },
-      },
-    }
+    options
   )
 
   if (authHeader) {
@@ -34,8 +43,12 @@ async function getUser(cookieStore: any, authHeader?: string) {
     if (!error && user) return user
   }
 
-  const { data: { user } } = await supabase.auth.getUser()
-  return user
+  if (cookieStore) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) return user
+  }
+
+  return null
 }
 
 async function getAiTags(content: string): Promise<string[]> {
@@ -83,7 +96,11 @@ export async function POST(req: Request) {
   let aiStatus = "success";
   
   try {
-    const cookieStore = cookies()
+    let cookieStore = null;
+    try {
+      cookieStore = cookies()
+    } catch (e) {}
+    
     const authHeader = req.headers.get('Authorization')
     const user = await getUser(cookieStore, authHeader || undefined)
     
