@@ -1,5 +1,5 @@
 // AtomaClip AI Content Script - Professional Nova Style
-const DEFAULT_API_URL = "https://atomaclip.vercel.app";
+const DEFAULT_API_URL = "https://atomaclip-ai-production.up.railway.app";
 
 async function getApiUrl() {
   return new Promise((resolve) => {
@@ -66,7 +66,8 @@ function showWhyPopup(data) {
       const response = await fetch(`${apiUrl}/api/insights/capture`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finalData)
+        body: JSON.stringify(finalData),
+        credentials: "include"
       });
       
       if (response.ok) {
