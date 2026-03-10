@@ -54,8 +54,14 @@ export async function POST(req: Request) {
       model: "sentence-transformers/all-mpnet-base-v2",
       inputs: query
     });
-
-    let embedding = Array.isArray(embeddingResult) ? embeddingResult.map(Number) : embeddingResult[0]?.map(Number);
+    
+    const arr = embeddingResult as unknown as (number | number[])[];
+    let embedding: number[] | null = null;
+    
+    if (Array.isArray(arr)) {
+      if (typeof arr[0] === 'number') embedding = arr as number[];
+      else if (Array.isArray(arr[0])) embedding = arr[0] as number[];
+    }
 
     if (!embedding) {
       return NextResponse.json({ error: "Failed to generate embedding" }, { status: 500, headers: corsHeaders });

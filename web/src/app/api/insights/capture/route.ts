@@ -57,8 +57,11 @@ async function getAiEmbedding(content: string): Promise<number[] | null> {
       inputs: content
     });
     
-    if (Array.isArray(result)) return result.map(Number);
-    if (result && Array.isArray(result[0])) return result[0].map(Number);
+    const arr = result as unknown as (number | number[])[];
+    if (Array.isArray(arr)) {
+      if (typeof arr[0] === 'number') return arr as number[];
+      if (Array.isArray(arr[0])) return arr[0] as number[];
+    }
   } catch (err) {
     console.error("Embedding failed:", err);
   }
@@ -195,3 +198,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
   }
 }
+// fix cache
