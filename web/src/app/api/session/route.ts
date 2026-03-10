@@ -26,6 +26,9 @@ export async function GET() {
           getAll() {
             return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
           },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          }
         },
       }
     )
@@ -33,7 +36,7 @@ export async function GET() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (!session) {
-      return NextResponse.json({ error: "No session" }, { status: 401, headers: corsHeaders });
+      return NextResponse.json({ error: "No session" }, { status: 401 });
     }
 
     return NextResponse.json({ 
@@ -41,8 +44,8 @@ export async function GET() {
         access_token: session.access_token,
         refresh_token: session.refresh_token
       }
-    }, { headers: corsHeaders });
+    });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to get session" }, { status: 500, headers: corsHeaders });
+    return NextResponse.json({ error: "Failed to get session" }, { status: 500 });
   }
 }

@@ -12,18 +12,13 @@ async function getApiUrl() {
 }
 
 async function getAuthHeader() {
-  console.log("Getting auth header...");
   try {
     const apiUrl = await getApiUrl();
-    console.log("API URL:", apiUrl);
     const response = await fetch(`${apiUrl}/api/session`, {
-      method: "GET",
-      credentials: "include"
+      method: "GET"
     });
-    console.log("Session response status:", response.status);
     if (response.ok) {
       const data = await response.json();
-      console.log("Session data:", data);
       if (data.session) {
         return { Authorization: `Bearer ${data.session.access_token}` };
       }
@@ -87,7 +82,6 @@ async function getAuthHeader() {
 }
 
   async function finishCapture() {
-    console.log("Starting capture...");
     const userNote = input.value;
     input.disabled = true;
     input.style.opacity = "0.5";
@@ -102,19 +96,14 @@ async function getAuthHeader() {
     try {
       const apiUrl = await getApiUrl();
       const authHeader = await getAuthHeader();
-      console.log("Auth header:", authHeader);
       const response = await fetch(`${apiUrl}/api/insights/capture`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           ...authHeader
         },
-        body: JSON.stringify(finalData),
-        credentials: "include"
+        body: JSON.stringify(finalData)
       });
-      
-      console.log("Response status:", response.status);
-      console.log("Response:", await response.text());
       
       if (response.ok) {
         aiState.innerHTML = `
