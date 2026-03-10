@@ -129,64 +129,6 @@ function showWhyPopup(data) {
     if (e.key === "Escape") popup.remove();
   });
 }
-    })
-  })
-}
-
-  async function finishCapture() {
-    const userNote = input.value;
-    input.disabled = true;
-    input.style.opacity = "0.5";
-    
-    const finalData = {
-      ...data,
-      user_note: userNote,
-      page_title: document.title,
-      source_url: window.location.href
-    };
-
-    console.log("Final data:", finalData);
-    
-    try {
-      const apiUrl = await getApiUrl();
-      console.log("Getting auth...");
-      const authHeader = await getAuthHeader();
-      console.log("Auth:", authHeader);
-      console.log("Sending to:", `${apiUrl}/api/insights/capture`);
-      const response = await fetch(`${apiUrl}/api/insights/capture`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...authHeader
-        },
-        body: JSON.stringify(finalData)
-      });
-      
-      console.log("Response:", response.status, response.statusText);
-      
-      if (response.ok) {
-        aiState.innerHTML = `
-          <div class="atomaclip-success-check">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            Atomized Successfully
-          </div>
-        `;
-        setTimeout(() => popup.remove(), 1500);
-      } else {
-        throw new Error("API Error");
-      }
-    } catch (err) {
-      console.log("Error:", err);
-      aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px; font-weight: 600;">Connection Failed</span>`;
-      setTimeout(() => popup.remove(), 2500);
-    }
-  }
-
-  input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") finishCapture();
-    if (e.key === "Escape") popup.remove();
-  });
-}
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log("Message received:", request);
