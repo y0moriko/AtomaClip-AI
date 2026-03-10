@@ -15,9 +15,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-async function getUser(cookies: any, authHeader?: string) {
-  const cookieStore = cookies()
-  
+async function getUser(cookieStore: any, authHeader?: string) {
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
