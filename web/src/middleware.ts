@@ -36,11 +36,17 @@ export async function middleware(req: NextRequest) {
     data: { session },
   } = await supabase.auth.getSession()
 
-  if (!session && req.nextUrl.pathname.startsWith('/app')) {
+  await supabase.auth.refreshSession()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user && req.nextUrl.pathname.startsWith('/app')) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  if (session && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
+  if (user && (req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/signup')) {
     return NextResponse.redirect(new URL('/app', req.url))
   }
 
