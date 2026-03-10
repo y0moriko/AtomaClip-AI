@@ -13,6 +13,10 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+export async function GET() {
+  return NextResponse.json({ error: "Method not allowed" }, { status: 405, headers: corsHeaders });
+}
+
 export async function DELETE(req: Request) {
   try {
     const cookieStore = cookies()
