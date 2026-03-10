@@ -53,6 +53,10 @@
     button:hover {
       background: #4f46e5;
     }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
     .status {
       margin-top: 12px;
       padding: 8px;
@@ -71,6 +75,11 @@
       color: #991b1b;
       display: block;
     }
+    .status.info {
+      background: #dbeafe;
+      color: #1e40af;
+      display: block;
+    }
     .section {
       margin-bottom: 16px;
       padding-bottom: 16px;
@@ -85,19 +94,15 @@
   <h2>AtomaClip Settings</h2>
   
   <div class="section">
-    <label for="authToken">Your Auth Token</label>
-    <input type="text" id="authToken" placeholder="Paste your token here">
-    <p class="hint">Get this from the download page while logged in</p>
+    <label for="email">Email</label>
+    <input type="email" id="email" placeholder="your@email.com">
+    
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="Your password">
+    
+    <button id="loginBtn">Save & Login</button>
+    <div id="status" class="status"></div>
   </div>
-  
-  <div class="section">
-    <label for="apiUrl">API Endpoint (optional)</label>
-    <input type="text" id="apiUrl" placeholder="https://atomaclip-ai-production.up.railway.app">
-    <p class="hint">Change this if using a custom server</p>
-  </div>
-  
-  <button id="saveBtn">Save Settings</button>
-  <div id="status" class="status"></div>
 
   <script src="settings.js"></script>
 </body>

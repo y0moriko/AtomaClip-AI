@@ -14,9 +14,9 @@ async function getApiUrl() {
 
 async function getAuthHeader() {
   return new Promise((resolve) => {
-    chrome.storage.sync.get(["authToken"], (result) => {
-      if (result.authToken) {
-        resolve({ Authorization: `Bearer ${result.authToken}` })
+    chrome.storage.sync.get(["accessToken"], (result) => {
+      if (result.accessToken) {
+        resolve({ Authorization: `Bearer ${result.accessToken}` })
       } else {
         resolve({})
       }
