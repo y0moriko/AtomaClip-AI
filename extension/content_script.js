@@ -13,11 +13,15 @@ async function getApiUrl() {
 }
 
 async function getAuthHeader() {
-  const meta = document.querySelector('meta[name="atomaclip-token"]')
-  if (meta && meta.content) {
-    return { Authorization: `Bearer ${meta.content}` }
-  }
-  return {};
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(["authToken"], (result) => {
+      if (result.authToken) {
+        resolve({ Authorization: `Bearer ${result.authToken}` })
+      } else {
+        resolve({})
+      }
+    })
+  })
 }
 
 function getGhostParagraphs() {
