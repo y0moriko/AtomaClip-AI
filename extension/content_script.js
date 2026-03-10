@@ -49,26 +49,42 @@ function showWhyPopup(data) {
   const statusIcon = popup.querySelector("#atomaclip-status");
   input.focus();
 
-  async function finishCapture() {
-    const userNote = input.value;
-    input.disabled = true;
-    input.style.opacity = "0.5";
-    
-    const finalData = {
-      ...data,
-      user_note: userNote,
-      page_title: document.title,
-      source_url: window.location.href
-    };
+async function getAuthHeader() {
+  return new Promise((resolve) => {
+    chrome.cookies.get({ url: 'https://atomaclip-ai-production.up.railway.app', name: 'sb-access-token' }, (cookie) => {
+      if (cookie) {
+        resolve({ Authorization: `Bearer ${cookie.value}` })
+      } else {
+        resolve({})
+      }
+    })
+  })
+}
 
-    try {
-      const apiUrl = await getApiUrl();
-      const response = await fetch(`${apiUrl}/api/insights/capture`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finalData),
-        credentials: "include"
-      });
+async function finishCapture() {
+  const userNote = input.value;
+  input.disabled = true;
+  input.style.opacity = "0.5";
+  
+  const finalData = {
+    ...data,
+    user_note: userNote,
+    page_title: document.title,
+    source_url: window.location.href
+  };
+
+  try {
+    const apiUrl = await getApiUrl();
+    const authHeader = await getAuthHeader();
+    const response = await fetch(`${apiUrl}/api/insights/capture`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        ...authHeader
+      },
+      body: JSON.stringify(finalData),
+      credentials: "include"
+    });
       
       if (response.ok) {
         aiState.innerHTML = `

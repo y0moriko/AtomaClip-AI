@@ -15,7 +15,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-async function getUser(cookies: any) {
+async function getUser(cookies: any, authHeader?: string) {
   const cookieStore = cookies()
   
   const supabase = createServerClient(
@@ -29,6 +29,12 @@ async function getUser(cookies: any) {
       },
     }
   )
+
+  if (authHeader) {
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    if (!error && user) return user
+  }
 
   const { data: { user } } = await supabase.auth.getUser()
   return user
@@ -80,7 +86,8 @@ export async function POST(req: Request) {
   
   try {
     const cookieStore = cookies()
-    const user = await getUser(cookieStore)
+    const authHeader = req.headers.get('Authorization')
+    const user = await getUser(cookieStore, authHeader || undefined)
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
