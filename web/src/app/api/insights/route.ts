@@ -3,7 +3,8 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import prisma from "@/lib/prisma";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
   try {
@@ -15,7 +16,7 @@ export async function GET() {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll().map(({ name, value }) => ({ name, value }))
+            return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
           },
         },
       }
