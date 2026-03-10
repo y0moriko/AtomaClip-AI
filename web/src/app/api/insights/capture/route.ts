@@ -16,6 +16,8 @@ const corsHeaders = {
 };
 
 async function getUser(cookieStore: any, authHeader?: string) {
+  console.log("getUser - authHeader:", authHeader)
+  
   const options: any = {
     auth: {
       persistSession: false,
@@ -102,7 +104,9 @@ export async function POST(req: Request) {
     } catch (e) {}
     
     const authHeader = req.headers.get('Authorization')
+    console.log("Capture - Auth header:", authHeader)
     const user = await getUser(cookieStore, authHeader || undefined)
+    console.log("Capture - User:", user)
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
