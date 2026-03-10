@@ -94,18 +94,22 @@ async function finishCapture() {
     source_url: window.location.href
   };
 
-  try {
-    const apiUrl = await getApiUrl();
-    const authHeader = await getAuthHeader();
-    const response = await fetch(`${apiUrl}/api/insights/capture`, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        ...authHeader
-      },
-      body: JSON.stringify(finalData),
-      credentials: "include"
-    });
+    try {
+      const apiUrl = await getApiUrl();
+      const authHeader = await getAuthHeader();
+      console.log("Auth header:", authHeader);
+      const response = await fetch(`${apiUrl}/api/insights/capture`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          ...authHeader
+        },
+        body: JSON.stringify(finalData),
+        credentials: "include"
+      });
+      
+      console.log("Response status:", response.status);
+      console.log("Response:", await response.text());
       
       if (response.ok) {
         aiState.innerHTML = `
