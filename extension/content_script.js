@@ -88,15 +88,20 @@ async function getAuthHeader() {
     input.style.opacity = "0.5";
     
     const finalData = {
-    ...data,
-    user_note: userNote,
-    page_title: document.title,
-    source_url: window.location.href
-  };
+      ...data,
+      user_note: userNote,
+      page_title: document.title,
+      source_url: window.location.href
+    };
 
+    console.log("Final data:", finalData);
+    
     try {
       const apiUrl = await getApiUrl();
+      console.log("Getting auth...");
       const authHeader = await getAuthHeader();
+      console.log("Auth:", authHeader);
+      console.log("Sending to:", `${apiUrl}/api/insights/capture`);
       const response = await fetch(`${apiUrl}/api/insights/capture`, {
         method: "POST",
         headers: { 
@@ -105,6 +110,8 @@ async function getAuthHeader() {
         },
         body: JSON.stringify(finalData)
       });
+      
+      console.log("Response:", response.status, response.statusText);
       
       if (response.ok) {
         aiState.innerHTML = `
@@ -118,6 +125,7 @@ async function getAuthHeader() {
         throw new Error("API Error");
       }
     } catch (err) {
+      console.log("Error:", err);
       aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px; font-weight: 600;">Connection Failed</span>`;
       setTimeout(() => popup.remove(), 2500);
     }
