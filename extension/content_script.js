@@ -12,14 +12,18 @@ async function getApiUrl() {
 }
 
 async function getAuthHeader() {
+  console.log("Getting auth header...");
   try {
     const apiUrl = await getApiUrl();
+    console.log("API URL:", apiUrl);
     const response = await fetch(`${apiUrl}/api/session`, {
       method: "GET",
       credentials: "include"
     });
+    console.log("Session response status:", response.status);
     if (response.ok) {
       const data = await response.json();
+      console.log("Session data:", data);
       if (data.session) {
         return { Authorization: `Bearer ${data.session.access_token}` };
       }
@@ -82,12 +86,13 @@ async function getAuthHeader() {
   })
 }
 
-async function finishCapture() {
-  const userNote = input.value;
-  input.disabled = true;
-  input.style.opacity = "0.5";
-  
-  const finalData = {
+  async function finishCapture() {
+    console.log("Starting capture...");
+    const userNote = input.value;
+    input.disabled = true;
+    input.style.opacity = "0.5";
+    
+    const finalData = {
     ...data,
     user_note: userNote,
     page_title: document.title,
