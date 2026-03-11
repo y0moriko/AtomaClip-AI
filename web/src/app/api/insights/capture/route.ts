@@ -3,12 +3,9 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { getOpenRouterEmbedding } from "@/lib/openrouter";
-
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary } from "@/lib/openrouter";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,52 +60,6 @@ async function getUser(cookieStore: any, authHeader?: string) {
 
   console.warn("getUser - No valid user found")
   return null
-}
-
-async function getAiTags(content: string): Promise<string[]> {
-  try {
-    const result = await hf.zeroShotClassification({
-      model: "facebook/bart-large-mnli",
-      inputs: content.slice(0, 500),
-      parameters: {
-        candidate_labels: ["technology", "science", "business", "health", "entertainment", "education", "politics", "sports", "news", "tips", "tutorial", "review", "opinion", "data", "research"]
-      }
-    });
-    
-    if (result && Array.isArray(result)) {
-      return result.map((r: any) => r.label.toLowerCase()).slice(0, 5);
-    }
-  } catch (err) {
-    console.error("Tagging failed:", err);
-  }
-  return ["research"];
-}
-
-async function getAiSummary(content: string): Promise<string | null> {
-  try {
-    const result = await hf.summarization({
-      model: "facebook/bart-large-cnn",
-      inputs: content.slice(0, 1024),
-      parameters: {
-        max_length: 60,
-        min_length: 30
-      }
-    });
-    return result.summary_text;
-  } catch (err) {
-    console.error("Summarization failed:", err);
-    return null;
-  }
-}
-
-async function getAiEmbedding(content: string): Promise<number[] | null> {
-  try {
-    // Upgraded to OpenRouter Embeddings (text-embedding-3-small, 768 dims)
-    return await getOpenRouterEmbedding(content);
-  } catch (err) {
-    console.error("Embedding failed:", err);
-  }
-  return null;
 }
 
 export async function OPTIONS() {
@@ -184,13 +135,13 @@ export async function POST(req: Request) {
 
     try {
       const tasks: any[] = [
-        getAiTags(content),
-        getAiEmbedding(content)
+        getOpenRouterTags(content),
+        getOpenRouterEmbedding(content)
       ];
       
       // If user note is empty, generate AI summary
       if (!user_note || user_note.trim() === "") {
-        tasks.push(getAiSummary(content));
+        tasks.push(getOpenRouterSummary(content));
       }
 
       const [aiTags, aiEmbedding, aiSummary] = await Promise.all(tasks);

@@ -7,8 +7,6 @@ const openai = new OpenAI({
 
 /**
  * Generates a 768-dimension embedding using OpenAI's text-embedding-3-small via OpenRouter.
- * Note: Not all OpenRouter providers support the 'dimensions' parameter.
- * If this fails or returns the wrong size, we will use a fallback or manual truncation.
  */
 export async function getOpenRouterEmbedding(text: string): Promise<number[] | null> {
   try {
@@ -27,8 +25,55 @@ export async function getOpenRouterEmbedding(text: string): Promise<number[] | n
 }
 
 /**
+ * Generates AI tags for content using Gemini Flash via OpenRouter.
+ */
+export async function getOpenRouterTags(content: string): Promise<string[]> {
+  try {
+    const prompt = `
+      Analyze this text and return exactly 3-5 short, one-word tags as a JSON array of strings.
+      Focus on the main topics.
+      Text: "${content.slice(0, 1000)}"
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "google/gemini-flash-1.5",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    const contentStr = response.choices[0].message.content || '{"tags": ["research"]}';
+    const data = JSON.parse(contentStr);
+    return Array.isArray(data.tags) ? data.tags.map((t: string) => t.toLowerCase()) : ["research"];
+  } catch (error) {
+    console.error("OpenRouter Tagging Error:", error);
+    return ["research"];
+  }
+}
+
+/**
+ * Generates a concise AI summary for content using Gemini Flash via OpenRouter.
+ */
+export async function getOpenRouterSummary(content: string): Promise<string | null> {
+  try {
+    const prompt = `
+      Summarize this text in one short sentence (max 15 words).
+      Text: "${content.slice(0, 2000)}"
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "google/gemini-flash-1.5",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error("OpenRouter Summary Error:", error);
+    return null;
+  }
+}
+
+/**
  * Generates a deep insight synthesis using Gemini 1.5 Flash via OpenRouter.
- * This is much more reliable than calling Google's API directly in many regions.
  */
 export async function generateDeepInsight(query: string, insights: any[]) {
   try {
@@ -51,7 +96,7 @@ export async function generateDeepInsight(query: string, insights: any[]) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "google/gemini-flash-1.5", // Using Gemini via OpenRouter for reliability
+      model: "google/gemini-flash-1.5",
       messages: [
         { role: "user", content: prompt }
       ],
