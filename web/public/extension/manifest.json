@@ -3,7 +3,7 @@
   "name": "AtomaClip AI",
   "version": "1.0",
   "description": "Capture atomic insights with AI-powered semantic search.",
-  "permissions": ["contextMenus", "activeTab", "storage"],
+  "permissions": ["contextMenus", "activeTab", "storage", "cookies"],
   "background": {
     "service_worker": "background.js"
   },

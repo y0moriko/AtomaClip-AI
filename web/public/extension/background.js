@@ -1,6 +1,5 @@
 // AtomaClip AI Background Service Worker
-const SUPABASE_URL = "https://luoayfkneqjudcizrsoo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1b2F5ZmtuZXFqdWRjaXpyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTEzMjAsImV4cCI6MjA4ODUyNzMyMH0.pKijxVzN5b7jdL1am3yIAeXezIx8_9NB1bDTzCHQNgY";
+const PRODUCTION_URL = "https://atomaclip-ai-production.up.railway.app";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -18,14 +17,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "GET_SESSION") {
-    // Try to get session from localStorage via injected script
-    chrome.cookies.get({ url: "https://atomaclip-ai-production.up.railway.app", name: "sb-access-token" }, (cookie) => {
-      if (cookie && cookie.value) {
-        sendResponse({ session: { access_token: cookie.value } });
-      } else {
-        sendResponse({ error: "No session" });
+    console.log("Background - GET_SESSION request received");
+    
+    chrome.cookies.getAll({ url: PRODUCTION_URL }, (cookies) => {
+      console.log(`Background - Found ${cookies.length} cookies for ${PRODUCTION_URL}`);
+      
+      // Log cookie names for debugging (don't log values!)
+      cookies.forEach(c => console.log("Background - Cookie name:", c.name));
+
+      // Supabase cookies usually look like: sb-[project-id]-auth-token
+      // Or sb-[project-id]-auth-token.0 (chunked)
+      const tokenCookie = cookies.find(c => c.name.includes("auth-token"));
+      
+      if (tokenCookie) {
+        console.log("Background - Found auth-token cookie:", tokenCookie.name);
+        try {
+          const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value));
+          if (tokenData.access_token) {
+            console.log("Background - Successfully extracted access_token");
+            sendResponse({ accessToken: tokenData.access_token });
+            return;
+          }
+        } catch (e) {
+          console.log("Background - Cookie not JSON, sending raw value");
+          sendResponse({ accessToken: tokenCookie.value });
+          return;
+        }
       }
+      
+      console.warn("Background - No auth-token cookie found among cookies");
+      sendResponse({ error: "No session found in cookies" });
     });
-    return true;
+    return true; 
   }
 });
