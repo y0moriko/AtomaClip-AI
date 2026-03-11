@@ -1,6 +1,5 @@
 // AtomaClip AI Background Service Worker
-const SUPABASE_URL = "https://luoayfkneqjudcizrsoo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1b2F5ZmtuZXFqdWRjaXpyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTEzMjAsImV4cCI6MjA4ODUyNzMyMH0.pKijxVzN5b7jdL1am3yIAeXezIx8_9NB1bDTzCHQNgY";
+const PRODUCTION_URL = "https://atomaclip-ai-production.up.railway.app";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -18,14 +17,28 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "GET_SESSION") {
-    // Try to get session from localStorage via injected script
-    chrome.cookies.get({ url: "https://atomaclip-ai-production.up.railway.app", name: "sb-access-token" }, (cookie) => {
-      if (cookie && cookie.value) {
-        sendResponse({ session: { access_token: cookie.value } });
-      } else {
-        sendResponse({ error: "No session" });
+    // Try to get Supabase session from cookies for the production app
+    // Supabase uses cookies starting with sb-
+    chrome.cookies.getAll({ url: PRODUCTION_URL }, (cookies) => {
+      // Find the access token cookie. It usually looks like sb-YOURPROJECTID-auth-token
+      const tokenCookie = cookies.find(c => c.name.includes("auth-token"));
+      
+      if (tokenCookie) {
+        try {
+          // Supabase token cookies are often JSON encoded
+          const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value));
+          if (tokenData.access_token) {
+            sendResponse({ accessToken: tokenData.access_token });
+            return;
+          }
+        } catch (e) {
+          // If not JSON, it might just be the token itself
+          sendResponse({ accessToken: tokenCookie.value });
+          return;
+        }
       }
+      sendResponse({ error: "No session found in cookies" });
     });
-    return true;
+    return true; // Keep message channel open for async response
   }
 });

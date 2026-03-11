@@ -14,11 +14,23 @@ async function getApiUrl() {
 
 async function getAuthHeader() {
   return new Promise((resolve) => {
+    // 1. Try Extension Storage first (Manual login)
     chrome.storage.sync.get(["accessToken"], (result) => {
       if (result.accessToken) {
-        resolve({ Authorization: `Bearer ${result.accessToken}` })
+        console.log("getAuthHeader - Using storage token");
+        resolve({ Authorization: `Bearer ${result.accessToken}` });
       } else {
-        resolve({})
+        // 2. Try Background Cookie sync (Web Dashboard login)
+        console.log("getAuthHeader - No storage token, checking cookies...");
+        chrome.runtime.sendMessage({ action: "GET_SESSION" }, (response) => {
+          if (response && response.accessToken) {
+            console.log("getAuthHeader - Using cookie token from background");
+            resolve({ Authorization: `Bearer ${response.accessToken}` });
+          } else {
+            console.warn("getAuthHeader - No token found anywhere");
+            resolve({});
+          }
+        });
       }
     })
   })
