@@ -66,6 +66,10 @@ export default function DashboardPage() {
     }
   }
 
+  const handleDeleteInsight = (id: string) => {
+    setInsights((prev) => prev.filter((i) => i.id !== id))
+  }
+
   React.useEffect(() => {
     fetchInsights()
   }, [view])
@@ -186,7 +190,11 @@ export default function DashboardPage() {
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
                 >
                   {insights.map((insight) => (
-                    <InsightCard key={insight.id} insight={insight} />
+                    <InsightCard 
+                      key={insight.id} 
+                      insight={insight} 
+                      onDelete={handleDeleteInsight} 
+                    />
                   ))}
                 </motion.div>
               )}

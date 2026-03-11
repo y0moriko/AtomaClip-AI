@@ -73,6 +73,10 @@ export default function SemanticSearchPage() {
     }
   }
 
+  const handleDeleteInsight = (id: string) => {
+    setResults((prev) => prev.filter((i) => i.id !== id))
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -254,7 +258,7 @@ export default function SemanticSearchPage() {
                                   </Badge>
                                </div>
                              )}
-                             <InsightCard insight={insight} />
+                             <InsightCard insight={insight} onDelete={handleDeleteInsight} />
                           </div>
                         ))}
                       </div>
