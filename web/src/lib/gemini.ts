@@ -1,9 +1,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
+const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+
+if (!apiKey) {
+  console.error("❌ GOOGLE_GENERATIVE_AI_API_KEY is missing! Gemini features will fail.");
+}
+
+const genAI = new GoogleGenerativeAI(apiKey || "");
 
 export async function getGeminiEmbedding(text: string) {
   try {
+    if (!apiKey) throw new Error("API Key missing");
     const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
     const result = await model.embedContent(text);
     return result.embedding.values;
@@ -15,6 +22,7 @@ export async function getGeminiEmbedding(text: string) {
 
 export async function generateDeepInsight(query: string, insights: any[]) {
   try {
+    if (!apiKey) throw new Error("API Key missing");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     
     const context = insights.map((i, idx) => `[Insight ${idx + 1}]: ${i.content}\nSource: ${i.pageTitle || i.sourceUrl}`).join("\n\n");
