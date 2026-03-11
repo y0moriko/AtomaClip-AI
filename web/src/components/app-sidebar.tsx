@@ -81,7 +81,6 @@ const data = {
         {
           title: "Semantic Search",
           url: "/app/search",
-          badge: "Coming Soon"
         },
         {
           title: "Daily Spark",
