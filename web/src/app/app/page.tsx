@@ -25,6 +25,40 @@ import { Library, Sparkles, Star } from "lucide-react"
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
+
+const SAMPLE_CLIPS = [
+  {
+    id: "sample-1",
+    content: "The best way to predict the future is to invent it. - Alan Kay",
+    sourceUrl: "https://en.wikipedia.org/wiki/Alan_Kay",
+    pageTitle: "Alan Kay - Wikipedia",
+    tags: ["innovation", "futurism", "quotes"],
+    userNote: "AI Summary: Emphasizes proactive creation over passive prediction",
+    createdAt: new Date().toISOString(),
+    isFavorite: false,
+  },
+  {
+    id: "sample-2",
+    content: "Knowledge is only useful if you can retrieve it at the right time. - Andy Hunt",
+    sourceUrl: "https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/",
+    pageTitle: "The Pragmatic Programmer",
+    tags: ["knowledge-management", "productivity"],
+    userNote: "AI Summary: Context matters more than storage",
+    createdAt: new Date().toISOString(),
+    isFavorite: true,
+  },
+  {
+    id: "sample-3",
+    content: "Atomic habits are the compound interest of self-improvement. - James Clear",
+    sourceUrl: "https://jamesclear.com/atomic-habits",
+    pageTitle: "Atomic Habits by James Clear",
+    tags: ["habits", "learning", "growth"],
+    userNote: "AI Summary: Small consistent changes lead to remarkable results",
+    createdAt: new Date().toISOString(),
+    isFavorite: false,
+  },
+]
 
 export default function DashboardPage() {
   const [insights, setInsights] = React.useState<any[]>([])
@@ -220,22 +254,37 @@ export default function DashboardPage() {
             </AnimatePresence>
 
             {!loading && insights.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-32 text-center">
-                <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                  {view === 'starred' ? (
-                    <Star className="w-6 h-6 text-muted-foreground/40" />
-                  ) : (
-                    <Library className="w-6 h-6 text-muted-foreground/40" />
-                  )}
+              <div className="space-y-8">
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20">
+                    <Sparkles className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    Welcome to your knowledge brain
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                    Start clipping insights from anywhere on the web. Here's how it works:
+                  </p>
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">
-                  {view === 'recent' ? "No recent activity" : view === 'starred' ? "No starred atoms" : "Vault section is empty"}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {view === 'recent' ? "Clips from the last 24 hours will appear here." : 
-                   view === 'starred' ? "Mark atoms as favorite to see them in this list." :
-                   "Start clipping insights to see them here."}
-                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {SAMPLE_CLIPS.map((sample) => (
+                    <InsightCard key={sample.id} insight={sample} isSample />
+                  ))}
+                </div>
+
+                <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-6 text-center">
+                  <h4 className="font-bold text-foreground mb-2">Ready to start clipping?</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Install the Chrome extension to capture insights from any webpage.
+                  </p>
+                  <Link href="/download">
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Install Extension
+                    </Button>
+                  </Link>
+                </div>
               </div>
             )}
           </div>

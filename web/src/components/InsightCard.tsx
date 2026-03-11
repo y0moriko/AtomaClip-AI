@@ -23,7 +23,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 
-export default function InsightCard({ insight: initialInsight, onDelete }: { insight: any, onDelete?: (id: string) => void }) {
+export default function InsightCard({ insight: initialInsight, isSample = false, onDelete }: { insight: any; isSample?: boolean; onDelete?: (id: string) => void }) {
   const [insight, setInsight] = React.useState(initialInsight)
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [isEditingNote, setIsEditingNote] = React.useState(false)
@@ -38,6 +38,7 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
   }
 
   const toggleFavorite = async () => {
+    if (isSample) return
     const newFavorite = !insight.isFavorite
     // Optimistic update
     setInsight({ ...insight, isFavorite: newFavorite })
@@ -56,6 +57,7 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
   }
 
   const handleDelete = async () => {
+    if (isSample) return
     if (isDeleting) return
     setIsDeleting(true)
     try {
@@ -75,6 +77,7 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
   }
 
   const saveNote = async () => {
+    if (isSample) return
     const cleanNote = noteDraft.trim()
     setIsEditingNote(false)
     
@@ -106,23 +109,31 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
     <Card className="flex flex-col h-full bg-card hover:bg-accent/5 transition-colors border-border/50 shadow-sm overflow-hidden group">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex flex-col gap-1 overflow-hidden">
-          <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-            <ExternalLink className="h-3 w-3" />
-            <span className="truncate">{new URL(insight.sourceUrl).hostname}</span>
-          </CardTitle>
+          {isSample ? (
+            <Badge variant="outline" className="w-fit text-[9px] bg-indigo-500/10 text-indigo-600 border-indigo-500/20 font-bold uppercase tracking-wider">
+              Sample
+            </Badge>
+          ) : (
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+              <ExternalLink className="h-3 w-3" />
+              <span className="truncate">{new URL(insight.sourceUrl).hostname}</span>
+            </CardTitle>
+          )}
           <CardDescription className="line-clamp-1 text-[10px]">
             {insight.pageTitle}
           </CardDescription>
         </div>
         <div className="flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className={cn("h-7 w-7", insight.isFavorite ? "text-red-500 hover:text-red-600" : "text-muted-foreground/40 hover:text-foreground")}
-            onClick={toggleFavorite}
-          >
-            <Heart className={cn("h-3.5 w-3.5", insight.isFavorite && "fill-current")} />
-          </Button>
+          {!isSample && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={cn("h-7 w-7", insight.isFavorite ? "text-red-500 hover:text-red-600" : "text-muted-foreground/40 hover:text-foreground")}
+              onClick={toggleFavorite}
+            >
+              <Heart className={cn("h-3.5 w-3.5", insight.isFavorite && "fill-current")} />
+            </Button>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-7 w-7 p-0">
@@ -130,24 +141,30 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => {setIsEditingNote(true); setNoteDraft(insight.userNote || "");}}>
-                <Edit2 className="mr-2 h-4 w-4" />
-                Edit Note
-              </DropdownMenuItem>
+              {!isSample && (
+                <DropdownMenuItem onClick={() => {setIsEditingNote(true); setNoteDraft(insight.userNote || "");}}>
+                  <Edit2 className="mr-2 h-4 w-4" />
+                  Edit Note
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={copyToMarkdown}>
                 <Copy className="mr-2 h-4 w-4" />
                 Copy Markdown
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <a href={insight.sourceUrl} target="_blank" rel="noreferrer">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Source
-                </a>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {!isSample && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <a href={insight.sourceUrl} target="_blank" rel="noreferrer">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      View Source
+                    </a>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleDelete} className="text-red-600 focus:text-red-600">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -173,7 +190,30 @@ export default function InsightCard({ insight: initialInsight, onDelete }: { ins
         )}
 
         <div className="mt-4">
-          {isEditingNote ? (
+          {isSample ? (
+            (insight.userNote || isAiSummary) && (
+              <div 
+                className={cn(
+                  "p-2.5 rounded-lg border text-[11px] leading-relaxed",
+                  isAiSummary 
+                    ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
+                    : "bg-muted/50 border-border text-muted-foreground"
+                )}
+              >
+                <div className="flex items-center gap-1.5 mb-1 opacity-70">
+                  {isAiSummary ? (
+                    <Sparkles className="h-3 w-3 text-indigo-500" />
+                  ) : (
+                    <User className="h-3 w-3" />
+                  )}
+                  <span className="font-bold uppercase text-[9px] tracking-wider">
+                    {isAiSummary ? "AI Insight" : "Your Note"}
+                  </span>
+                </div>
+                {isAiSummary ? insight.userNote.replace("AI Summary:", "").trim() : insight.userNote}
+              </div>
+            )
+          ) : isEditingNote ? (
             <div className="space-y-2">
               <Input 
                 value={noteDraft}
