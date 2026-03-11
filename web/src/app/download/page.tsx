@@ -40,71 +40,46 @@ export default function DownloadPage() {
         <div className="bg-card border rounded-2xl p-8 shadow-sm">
           {token ? (
             <div className="space-y-4">
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-700 font-medium">You're logged in!</p>
-                <p className="text-xs text-green-600 mt-1">Copy this token and paste it in the extension settings.</p>
+              <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-lg">
+                <p className="text-sm text-indigo-700 font-medium">You're logged in!</p>
+                <p className="text-xs text-indigo-600 mt-1">Once you install the extension, it will automatically sync with your account. No setup required.</p>
               </div>
               
-              <div className="flex gap-2">
-                <code className="flex-1 p-3 bg-muted rounded-lg text-xs font-mono break-all">
-                  {token}
-                </code>
-                <Button size="sm" variant="outline" onClick={copyToken}>
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">How to use:</h4>
-                <ol className="text-sm text-muted-foreground space-y-2">
-                  <li>1. Download the extension</li>
-                  <li>2. Load it in Chrome (Developer mode → Load unpacked)</li>
-                  <li>3. Right-click extension → Options</li>
-                  <li>4. Paste your token and save</li>
-                </ol>
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Please log in first to get your token.</p>
-              <Link href="/login">
-                <Button className="mt-4">Log In</Button>
-              </Link>
-            </div>
-          )}
-
-          {token && (
-            <div className="mt-6 space-y-4">
-              <div className="border-t" />
-
-              <div className="space-y-4">
-                <h4 className="font-medium">Install Extension</h4>
+              <div className="mt-6 space-y-4">
+                <h4 className="font-medium">Install & Setup Extension</h4>
                 <ol className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex gap-3">
                     <span className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">1</span>
-                    <span>Click download below</span>
+                    <span>Click <strong>Download Extension</strong> below to get the ZIP file.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">2</span>
-                    <span>Open <code className="bg-muted px-1.5 py-0.5 rounded text-xs">chrome://extensions</code></span>
+                    <span>Open <code className="bg-muted px-1.5 py-0.5 rounded text-xs">chrome://extensions</code> in your browser.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">3</span>
-                    <span>Enable <strong>Developer mode</strong></span>
+                    <span>Enable <strong>Developer mode</strong> in the top-right corner.</span>
                   </li>
                   <li className="flex gap-3">
                     <span className="w-6 h-6 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center text-xs font-bold shrink-0">4</span>
-                    <span>Click <strong>Load unpacked</strong> and select the folder</span>
+                    <span>Click <strong>Load unpacked</strong> and select the extracted folder.</span>
                   </li>
                 </ol>
 
                 <a href="/api/download-extension">
-                  <Button className="w-full gap-2" size="lg">
+                  <Button className="w-full gap-2 mt-4" size="lg">
                     <Download className="w-4 h-4" />
                     Download Extension (ZIP)
                   </Button>
                 </a>
               </div>
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Please log in first to get started.</p>
+              <Link href="/login">
+                <Button className="mt-4">Log In</Button>
+              </Link>
             </div>
           )}
         </div>
