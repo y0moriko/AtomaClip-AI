@@ -86,7 +86,13 @@ function showWhyPopup(data) {
       const apiUrl = await getApiUrl();
       console.log("Getting auth...");
       const authHeader = await getAuthHeader();
-      console.log("Auth:", authHeader);
+      
+      if (authHeader.Authorization) {
+        console.log("Auth header token (first 10 chars):", authHeader.Authorization.substring(7, 17));
+      } else {
+        console.warn("No Authorization header generated - User might not be logged in in extension settings");
+      }
+
       console.log("Sending to:", `${apiUrl}/api/insights/capture`);
       const response = await fetch(`${apiUrl}/api/insights/capture`, {
         method: "POST",
@@ -98,6 +104,8 @@ function showWhyPopup(data) {
       });
       
       console.log("Response:", response.status, response.statusText);
+      const resData = await response.json().catch(() => ({}));
+      console.log("Response Data:", resData);
       
       if (response.ok) {
         aiState.innerHTML = `
@@ -108,12 +116,13 @@ function showWhyPopup(data) {
         `;
         setTimeout(() => popup.remove(), 1500);
       } else {
-        throw new Error("API Error");
+        const errorMsg = resData.error || "API Error";
+        throw new Error(`${errorMsg} (${response.status})`);
       }
     } catch (err) {
-      console.log("Error:", err);
-      aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px; font-weight: 600;">Connection Failed</span>`;
-      setTimeout(() => popup.remove(), 2500);
+      console.log("Error details:", err);
+      aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px; font-weight: 600;">${err.message}</span>`;
+      setTimeout(() => popup.remove(), 3500);
     }
   }
 

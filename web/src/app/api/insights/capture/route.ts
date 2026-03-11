@@ -16,7 +16,7 @@ const corsHeaders = {
 };
 
 async function getUser(cookieStore: any, authHeader?: string) {
-  console.log("getUser - authHeader:", authHeader)
+  console.log("getUser - authHeader present:", !!authHeader)
   
   const options: any = {
     auth: {
@@ -41,15 +41,26 @@ async function getUser(cookieStore: any, authHeader?: string) {
 
   if (authHeader) {
     const token = authHeader.replace('Bearer ', '')
+    console.log("getUser - testing token (first 10 chars):", token.substring(0, 10))
     const { data: { user }, error } = await supabase.auth.getUser(token)
-    if (!error && user) return user
+    if (error) {
+      console.error("getUser - Supabase Auth Error:", error.message)
+    }
+    if (user) {
+      console.log("getUser - Auth success for:", user.email)
+      return user
+    }
   }
 
   if (cookieStore) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) return user
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (user) {
+      console.log("getUser - Cookie auth success for:", user.email)
+      return user
+    }
   }
 
+  console.warn("getUser - No valid user found")
   return null
 }
 
