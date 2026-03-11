@@ -6,12 +6,15 @@ if (!apiKey) {
   console.error("❌ GOOGLE_GENERATIVE_AI_API_KEY is missing! Gemini features will fail.");
 }
 
+// Force v1 API version as v1beta seems to have issues with these models in some regions
 const genAI = new GoogleGenerativeAI(apiKey || "");
 
 export async function getGeminiEmbedding(text: string) {
   try {
     if (!apiKey) throw new Error("API Key missing");
-    const model = genAI.getGenerativeModel({ model: "embedding-001" });
+    
+    // Using the newer model which is available on v1
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
     const result = await model.embedContent(text);
     return result.embedding.values;
   } catch (error) {
