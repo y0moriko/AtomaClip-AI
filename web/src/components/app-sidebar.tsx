@@ -79,18 +79,17 @@ const data = {
       items: [
         {
           title: "Semantic Search",
-          url: "#",
+          url: "/app/search",
           badge: "Coming Soon"
         },
         {
           title: "Daily Spark",
-          url: "#",
+          url: "/app/spark",
           badge: "Coming Soon"
         },
         {
           title: "AI Tagging",
-          url: "#",
-          badge: "Coming Soon"
+          url: "/app/tagging",
         },
       ],
     },
