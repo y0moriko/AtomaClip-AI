@@ -17,28 +17,37 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === "GET_SESSION") {
-    // Try to get Supabase session from cookies for the production app
-    // Supabase uses cookies starting with sb-
+    console.log("Background - GET_SESSION request received");
+    
     chrome.cookies.getAll({ url: PRODUCTION_URL }, (cookies) => {
-      // Find the access token cookie. It usually looks like sb-YOURPROJECTID-auth-token
+      console.log(`Background - Found ${cookies.length} cookies for ${PRODUCTION_URL}`);
+      
+      // Log cookie names for debugging (don't log values!)
+      cookies.forEach(c => console.log("Background - Cookie name:", c.name));
+
+      // Supabase cookies usually look like: sb-[project-id]-auth-token
+      // Or sb-[project-id]-auth-token.0 (chunked)
       const tokenCookie = cookies.find(c => c.name.includes("auth-token"));
       
       if (tokenCookie) {
+        console.log("Background - Found auth-token cookie:", tokenCookie.name);
         try {
-          // Supabase token cookies are often JSON encoded
           const tokenData = JSON.parse(decodeURIComponent(tokenCookie.value));
           if (tokenData.access_token) {
+            console.log("Background - Successfully extracted access_token");
             sendResponse({ accessToken: tokenData.access_token });
             return;
           }
         } catch (e) {
-          // If not JSON, it might just be the token itself
+          console.log("Background - Cookie not JSON, sending raw value");
           sendResponse({ accessToken: tokenCookie.value });
           return;
         }
       }
+      
+      console.warn("Background - No auth-token cookie found among cookies");
       sendResponse({ error: "No session found in cookies" });
     });
-    return true; // Keep message channel open for async response
+    return true; 
   }
 });
