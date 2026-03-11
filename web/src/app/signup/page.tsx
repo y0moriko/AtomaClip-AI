@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { supabase } from "@/lib/supabase"
-import { Brain, Loader2, Mail, Lock, ArrowLeft } from "lucide-react"
+import { Brain, Loader2, Mail, Lock, ArrowLeft, CheckCircle2 } from "lucide-react"
 
 export default function SignUpPage() {
   const router = useRouter()
@@ -48,20 +48,27 @@ export default function SignUpPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
         <Card className="w-full max-w-md">
-          <CardContent className="pt-6 text-center">
+          <CardContent className="pt-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="w-8 h-8 text-green-600" />
+              <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-semibold mb-2">Check your email!</h2>
-            <p className="text-muted-foreground mb-4">
-              We sent a confirmation link to <strong>{email}</strong>
+            <h2 className="text-2xl font-bold mb-2">Account Created!</h2>
+            <p className="text-muted-foreground mb-8">
+              Welcome to AtomaClip AI. Your account for <strong>{email}</strong> is ready to use.
             </p>
-            <Link href="/">
-              <Button variant="outline">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to home
-              </Button>
-            </Link>
+            <div className="flex flex-col gap-3">
+              <Link href="/login" className="w-full">
+                <Button className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 font-bold rounded-xl shadow-lg shadow-indigo-500/20">
+                  Sign in to your account
+                </Button>
+              </Link>
+              <Link href="/" className="w-full">
+                <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back to home
+                </Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>
