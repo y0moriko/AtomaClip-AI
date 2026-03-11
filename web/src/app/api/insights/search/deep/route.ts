@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generateDeepInsight } from "@/lib/gemini";
+import { generateDeepInsight } from "@/lib/openrouter";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const answer = await generateDeepInsight(query, insights);
     
     if (!answer) {
-      return NextResponse.json({ error: "Gemini failed to generate an answer" }, { status: 500, headers: corsHeaders });
+      return NextResponse.json({ error: "OpenRouter failed to generate an answer" }, { status: 500, headers: corsHeaders });
     }
 
     return NextResponse.json({ answer }, { headers: corsHeaders });

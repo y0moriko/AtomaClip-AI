@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { getGeminiEmbedding } from "@/lib/gemini";
+import { getOpenRouterEmbedding } from "@/lib/openrouter";
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -103,9 +103,8 @@ async function getAiSummary(content: string): Promise<string | null> {
 
 async function getAiEmbedding(content: string): Promise<number[] | null> {
   try {
-    // Upgraded to Gemini Embeddings
-    const embedding = await getGeminiEmbedding(content);
-    return (embedding as number[]) || null;
+    // Upgraded to OpenRouter Embeddings (text-embedding-3-small, 768 dims)
+    return await getOpenRouterEmbedding(content);
   } catch (err) {
     console.error("Embedding failed:", err);
   }

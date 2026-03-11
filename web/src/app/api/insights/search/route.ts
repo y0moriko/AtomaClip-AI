@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-import { getGeminiEmbedding } from "@/lib/gemini";
+import { getOpenRouterEmbedding } from "@/lib/openrouter";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -55,8 +55,8 @@ export async function POST(req: Request) {
     let usedKeywordFallback = false;
 
     try {
-      // Upgraded to Gemini Embeddings
-      const embedding = await getGeminiEmbedding(query);
+      // Upgraded to OpenRouter Embeddings
+      const embedding = await getOpenRouterEmbedding(query);
 
       if (embedding) {
         insights = await prisma.$queryRaw`
