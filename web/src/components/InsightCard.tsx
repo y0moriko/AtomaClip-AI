@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Copy, ExternalLink, MoreHorizontal, ChevronDown, ChevronUp } from "lucide-react"
+import { Copy, ExternalLink, MoreHorizontal, ChevronDown, ChevronUp, Sparkles, User } from "lucide-react"
 import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
@@ -32,8 +32,10 @@ export default function InsightCard({ insight }: { insight: any }) {
     toast.success("Copied to Markdown")
   }
 
+  const isAiSummary = insight.userNote?.startsWith("AI Summary:")
+
   return (
-    <Card className="flex flex-col h-full bg-card hover:bg-accent/5 transition-colors">
+    <Card className="flex flex-col h-full bg-card hover:bg-accent/5 transition-colors border-border/50 shadow-sm overflow-hidden">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="flex flex-col gap-1 overflow-hidden">
           <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
@@ -56,7 +58,7 @@ export default function InsightCard({ insight }: { insight: any }) {
               Copy Markdown
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href={insight.sourceUrl} target="_blank">
+              <a href={insight.sourceUrl} target="_blank" rel="noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 View Source
               </a>
@@ -73,7 +75,7 @@ export default function InsightCard({ insight }: { insight: any }) {
         )}
 
         {/* Main Atomic Clip - MANDATORY font-serif */}
-        <p className="font-serif text-[0.95rem] leading-relaxed text-foreground antialiased">
+        <p className="font-serif text-[0.95rem] leading-relaxed text-foreground antialiased selection:bg-indigo-100 selection:text-indigo-900">
           "{insight.content}"
         </p>
 
@@ -85,28 +87,42 @@ export default function InsightCard({ insight }: { insight: any }) {
         )}
 
         {insight.userNote && (
-          <div className="mt-4 p-2 rounded-md bg-muted/50 border text-[11px] text-muted-foreground">
-            <span className="font-bold uppercase text-[9px] block mb-1">Note</span>
-            {insight.userNote}
+          <div className={cn(
+            "mt-4 p-2.5 rounded-lg border text-[11px] leading-relaxed",
+            isAiSummary 
+              ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
+              : "bg-muted/50 border-border text-muted-foreground"
+          )}>
+            <div className="flex items-center gap-1.5 mb-1 opacity-70">
+              {isAiSummary ? (
+                <Sparkles className="h-3 w-3 text-indigo-500" />
+              ) : (
+                <User className="h-3 w-3" />
+              )}
+              <span className="font-bold uppercase text-[9px] tracking-wider">
+                {isAiSummary ? "AI Insight" : "Your Note"}
+              </span>
+            </div>
+            {isAiSummary ? insight.userNote.replace("AI Summary:", "").trim() : insight.userNote}
           </div>
         )}
       </CardContent>
       <CardFooter className="pt-2 flex flex-col items-start gap-3">
         <div className="flex flex-wrap gap-1">
           {insight.tags?.map((tag: string) => (
-            <Badge key={tag} variant="secondary" className="rounded-sm px-1.5 py-0 text-[10px] font-normal bg-muted">
+            <Badge key={tag} variant="secondary" className="rounded-md px-1.5 py-0 text-[10px] font-medium bg-secondary/50 text-secondary-foreground border-none">
               {tag}
             </Badge>
           ))}
         </div>
-        <div className="w-full flex items-center justify-between border-t pt-2">
-          <span className="text-[10px] text-muted-foreground">
-            {new Date(insight.createdAt).toLocaleDateString()}
+        <div className="w-full flex items-center justify-between border-t pt-2 mt-1">
+          <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter opacity-60">
+            {new Date(insight.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </span>
           <Button 
             variant="ghost" 
             size="sm" 
-            className="h-7 text-[10px] gap-1 px-2"
+            className="h-7 text-[10px] font-bold gap-1 px-2 hover:bg-transparent hover:text-indigo-600 transition-colors"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? (

@@ -59,14 +59,14 @@ function showWhyPopup(data) {
         <div id="atomaclip-status"></div>
       </div>
       
-      <input type="text" id="atomaclip-note" class="atomaclip-input" placeholder="What's the 'Why' for this clip?" autofocus>
+      <input type="text" id="atomaclip-note" class="atomaclip-input" placeholder="Optional: Add your own insight..." autofocus>
 
-      <button id="atomaclip-save" class="atomaclip-save-btn">Save</button>
+      <button id="atomaclip-save" class="atomaclip-save-btn">Capture Atom</button>
       
       <div id="atomaclip-ai-state" class="atomaclip-footer">
         <div class="atomaclip-ai-badge">
           <div class="atomaclip-shimmer"></div>
-          AI Contextualizing...
+          AI will auto-tag & summarize
         </div>
       </div>
     </div>

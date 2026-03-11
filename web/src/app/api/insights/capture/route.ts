@@ -83,6 +83,23 @@ async function getAiTags(content: string): Promise<string[]> {
   return ["research"];
 }
 
+async function getAiSummary(content: string): Promise<string | null> {
+  try {
+    const result = await hf.summarization({
+      model: "facebook/bart-large-cnn",
+      inputs: content.slice(0, 1024),
+      parameters: {
+        max_length: 60,
+        min_length: 30
+      }
+    });
+    return result.summary_text;
+  } catch (err) {
+    console.error("Summarization failed:", err);
+    return null;
+  }
+}
+
 async function getAiEmbedding(content: string): Promise<number[] | null> {
   try {
     const result = await hf.featureExtraction({
@@ -170,14 +187,27 @@ export async function POST(req: Request) {
 
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
+    let finalNote = user_note;
 
     try {
-      const [aiTags, aiEmbedding] = await Promise.all([
+      const tasks: any[] = [
         getAiTags(content),
         getAiEmbedding(content)
-      ]);
+      ];
+      
+      // If user note is empty, generate AI summary
+      if (!user_note || user_note.trim() === "") {
+        tasks.push(getAiSummary(content));
+      }
+
+      const [aiTags, aiEmbedding, aiSummary] = await Promise.all(tasks);
+      
       tags = aiTags;
       embedding = aiEmbedding;
+      if (aiSummary) {
+        finalNote = `AI Summary: ${aiSummary}`;
+      }
+      
       if (!embedding) aiStatus = "partial";
     } catch (aiErr) {
       console.error("AI Pipeline failed entirely");
@@ -195,7 +225,7 @@ export async function POST(req: Request) {
               "sourceUrl", "pageTitle", tags, "userId", "createdAt", "updatedAt",
               embedding
             ) VALUES (
-              ${insightId}, ${content}, ${context_before}, ${context_after}, ${user_note},
+              ${insightId}, ${content}, ${context_before}, ${context_after}, ${finalNote},
               ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, NOW(), NOW(),
               CAST(${embedding}::float8[] AS vector)
             )
@@ -214,7 +244,7 @@ export async function POST(req: Request) {
             content,
             contextBefore: context_before,
             contextAfter: context_after,
-            userNote: user_note,
+            userNote: finalNote,
             sourceUrl: source_url,
             pageTitle: page_title,
             tags,
