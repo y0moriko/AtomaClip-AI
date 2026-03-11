@@ -32,6 +32,7 @@ export function NavProjects({
     name: string
     url: string
     icon: LucideIcon
+    badge?: string
   }[]
 }) {
   const { isMobile } = useSidebar()
@@ -43,9 +44,16 @@ export function NavProjects({
         {projects.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
-                <item.icon />
-                <span>{item.name}</span>
+              <a href={item.url} className="flex items-center justify-between w-full">
+                <div className="flex items-center gap-2">
+                  <item.icon />
+                  <span>{item.name}</span>
+                </div>
+                {item.badge && (
+                  <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-md text-muted-foreground font-medium">
+                    {item.badge}
+                  </span>
+                )}
               </a>
             </SidebarMenuButton>
             <DropdownMenu>

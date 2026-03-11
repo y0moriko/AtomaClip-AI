@@ -54,21 +54,21 @@ const data = {
   navMain: [
     {
       title: "Workspace",
-      url: "/",
+      url: "/app",
       icon: LayoutDashboard,
       isActive: true,
       items: [
         {
           title: "All Atoms",
-          url: "/",
+          url: "/app",
         },
         {
           title: "Recent",
-          url: "#",
+          url: "/app",
         },
         {
           title: "Starred",
-          url: "#",
+          url: "/app",
         },
       ],
     },
@@ -80,14 +80,17 @@ const data = {
         {
           title: "Semantic Search",
           url: "#",
+          badge: "Coming Soon"
         },
         {
           title: "Daily Spark",
           url: "#",
+          badge: "Coming Soon"
         },
         {
           title: "AI Tagging",
           url: "#",
+          badge: "Coming Soon"
         },
       ],
     },
@@ -105,19 +108,10 @@ const data = {
   ],
   projects: [
     {
-      name: "Market Analysis",
+      name: "Collections",
       url: "#",
       icon: Frame,
-    },
-    {
-      name: "AI Trends",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Legal Briefs",
-      url: "#",
-      icon: Map,
+      badge: "Coming Soon"
     },
   ],
 }

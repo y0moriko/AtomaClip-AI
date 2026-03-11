@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useEffect } from "react"
+import { useEffect, useSearchParams } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { supabase } from "@/lib/supabase"
 import {
@@ -31,8 +31,9 @@ export default function DashboardPage() {
   const [insights, setInsights] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [view, setView] = React.useState("all") // 'all', 'recent', 'starred'
 
-  const fetchInsights = async (query = "") => {
+  const fetchInsights = async (query = "", currentView = view) => {
     setLoading(true)
     setSearchQuery(query)
     try {
@@ -46,7 +47,18 @@ export default function DashboardPage() {
         body
       })
       const data = await res.json()
-      setInsights(Array.isArray(data) ? data : [])
+      let filteredData = Array.isArray(data) ? data : []
+
+      if (!query) {
+        if (currentView === "recent") {
+          // Just an example: items from last 24h or first 5
+          filteredData = filteredData.slice(0, 5)
+        } else if (currentView === "starred") {
+          filteredData = filteredData.filter((i: any) => i.isFavorite)
+        }
+      }
+
+      setInsights(filteredData)
     } catch (err) {
       console.error(err)
       setInsights([])
@@ -56,8 +68,10 @@ export default function DashboardPage() {
   }
 
   React.useEffect(() => {
+    // Basic view switching logic based on URL hash or similar could go here
+    // For now we'll just handle it via state
     fetchInsights()
-  }, [])
+  }, [view])
 
   return (
     <SidebarProvider>
@@ -75,7 +89,7 @@ export default function DashboardPage() {
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="font-semibold text-foreground">
-                    {searchQuery ? "Deep Search" : "All Atoms"}
+                    {searchQuery ? "Deep Search" : view === "recent" ? "Recent" : view === "starred" ? "Starred" : "All Atoms"}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -89,42 +103,59 @@ export default function DashboardPage() {
         <div className="flex flex-1 flex-col gap-4 p-4 lg:p-8 overflow-y-auto custom-scrollbar bg-muted/10">
           {!searchQuery && (
             <div className="grid auto-rows-min gap-4 md:grid-cols-3 mb-4">
-              <Card className="bg-background border-none shadow-none ring-1 ring-border/50">
+              <Card 
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'all' ? 'ring-primary' : 'ring-border/50 hover:ring-border'}`}
+                onClick={() => setView('all')}
+              >
                 <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Atoms</CardTitle>
-                  <Library className="h-4 w-4 text-muted-foreground" />
+                  <Library className={`h-4 w-4 ${view === 'all' ? 'text-primary' : 'text-muted-foreground'}`} />
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold">{insights.length}</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">+12% from last week</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Full library</p>
                 </CardContent>
               </Card>
-              <Card className="bg-background border-none shadow-none ring-1 ring-border/50">
+              <Card 
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'recent' ? 'ring-primary' : 'ring-border/50 hover:ring-border'}`}
+                onClick={() => setView('recent')}
+              >
                 <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
-                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">AI Tags Generated</CardTitle>
-                  <Sparkles className="h-4 w-4 text-indigo-500" />
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Recent Atoms</CardTitle>
+                  <Sparkles className={`h-4 w-4 ${view === 'recent' ? 'text-indigo-500' : 'text-muted-foreground'}`} />
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <div className="text-2xl font-bold">1,284</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Saves you ~4 hours/mo</p>
+                  <div className="text-2xl font-bold">New</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Last 5 additions</p>
                 </CardContent>
               </Card>
               <div className="aspect-video rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex flex-col items-center justify-center p-4 text-center">
-                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">Pro Insight</p>
-                 <p className="text-[11px] text-muted-foreground max-w-[180px]">Your research is 40% more focused on AI than last month.</p>
+                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">MVP Version</p>
+                 <p className="text-[11px] text-muted-foreground max-w-[180px]">Your research is being synchronized in real-time.</p>
               </div>
             </div>
           )}
 
-          {searchQuery && (
+          {(searchQuery || view !== "all") && (
             <div className="mb-6 flex items-center gap-3">
-              <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/5 text-primary border-primary/20">
-                Query: {searchQuery}
-              </Badge>
+              {searchQuery && (
+                <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/5 text-primary border-primary/20">
+                  Query: {searchQuery}
+                </Badge>
+              )}
+              {view !== "all" && !searchQuery && (
+                <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-500/5 text-indigo-500 border-indigo-500/20 capitalize">
+                  Filter: {view}
+                </Badge>
+              )}
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => fetchInsights("")}
+                onClick={() => {
+                  setSearchQuery("")
+                  setView("all")
+                  fetchInsights("", "all")
+                }}
                 className="text-[11px] font-bold text-muted-foreground hover:text-foreground"
               >
                 Reset
@@ -158,7 +189,7 @@ export default function DashboardPage() {
                 <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
                   <Library className="w-6 h-6 text-muted-foreground/40" />
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">Vault is empty</h3>
+                <h3 className="text-sm font-semibold text-foreground">Vault section is empty</h3>
                 <p className="text-xs text-muted-foreground mt-1">Start clipping insights to see them here.</p>
               </div>
             )}
