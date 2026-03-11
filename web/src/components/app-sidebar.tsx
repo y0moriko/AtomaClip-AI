@@ -104,6 +104,17 @@ const data = {
         },
       ],
     },
+    {
+      title: "Support",
+      url: "#",
+      icon: MessageSquare,
+      items: [
+        {
+          title: "Share Feedback",
+          url: "https://forms.gle/your-google-form-id", // Update with actual form ID
+        },
+      ],
+    },
   ],
   projects: [
     {
