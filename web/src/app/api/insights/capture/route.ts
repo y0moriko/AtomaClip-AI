@@ -131,25 +131,27 @@ export async function POST(req: Request) {
 
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
-    let finalNote = user_note;
+    let finalNote = user_note || "";
 
     try {
+      // Always generate tags, embedding, and summary
       const tasks: any[] = [
         getOpenRouterTags(content),
-        getOpenRouterEmbedding(content)
+        getOpenRouterEmbedding(content),
+        getOpenRouterSummary(content)
       ];
       
-      // If user note is empty, generate AI summary
-      if (!user_note || user_note.trim() === "") {
-        tasks.push(getOpenRouterSummary(content));
-      }
-
       const [aiTags, aiEmbedding, aiSummary] = await Promise.all(tasks);
       
       tags = aiTags;
       embedding = aiEmbedding;
+      
+      // Combine user note with AI Insight
       if (aiSummary) {
-        finalNote = `AI Summary: ${aiSummary}`;
+        const aiPart = `AI Insight: ${aiSummary}`;
+        finalNote = user_note && user_note.trim() !== "" 
+          ? `${user_note}\n\n${aiPart}`
+          : aiPart;
       }
       
       if (!embedding) aiStatus = "partial";

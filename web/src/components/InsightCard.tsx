@@ -191,26 +191,34 @@ export default function InsightCard({ insight: initialInsight, isSample = false,
 
         <div className="mt-4">
           {isSample ? (
-            (insight.userNote || isAiSummary) && (
-              <div 
-                className={cn(
-                  "p-2.5 rounded-lg border text-[11px] leading-relaxed",
-                  isAiSummary 
-                    ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
-                    : "bg-muted/50 border-border text-muted-foreground"
-                )}
-              >
-                <div className="flex items-center gap-1.5 mb-1 opacity-70">
-                  {isAiSummary ? (
-                    <Sparkles className="h-3 w-3 text-indigo-500" />
-                  ) : (
-                    <User className="h-3 w-3" />
-                  )}
-                  <span className="font-bold uppercase text-[9px] tracking-wider">
-                    {isAiSummary ? "AI Insight" : "Your Note"}
-                  </span>
-                </div>
-                {isAiSummary ? insight.userNote.replace("AI Summary:", "").trim() : insight.userNote}
+            insight.userNote && (
+              <div className="space-y-2">
+                {insight.userNote.split('\n\n').map((part: string, idx: number) => {
+                  const isPartAi = part.startsWith('AI Insight:') || part.startsWith('AI Summary:');
+                  return (
+                    <div 
+                      key={idx}
+                      className={cn(
+                        "p-2.5 rounded-lg border text-[11px] leading-relaxed",
+                        isPartAi 
+                          ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
+                          : "bg-muted/50 border-border text-muted-foreground"
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1 opacity-70">
+                        {isPartAi ? (
+                          <Sparkles className="h-3 w-3 text-indigo-500" />
+                        ) : (
+                          <User className="h-3 w-3" />
+                        )}
+                        <span className="font-bold uppercase text-[9px] tracking-wider">
+                          {isPartAi ? "AI Insight" : "Your Note"}
+                        </span>
+                      </div>
+                      {isPartAi ? part.replace(/AI (Insight|Summary):/, "").trim() : part}
+                    </div>
+                  )
+                })}
               </div>
             )
           ) : isEditingNote ? (
@@ -235,27 +243,35 @@ export default function InsightCard({ insight: initialInsight, isSample = false,
               </div>
             </div>
           ) : (
-            (insight.userNote || isAiSummary) && (
-              <div 
-                className={cn(
-                  "p-2.5 rounded-lg border text-[11px] leading-relaxed cursor-pointer hover:border-indigo-500/30 transition-colors",
-                  isAiSummary 
-                    ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
-                    : "bg-muted/50 border-border text-muted-foreground"
-                )}
-                onClick={() => setIsEditingNote(true)}
-              >
-                <div className="flex items-center gap-1.5 mb-1 opacity-70">
-                  {isAiSummary ? (
-                    <Sparkles className="h-3 w-3 text-indigo-500" />
-                  ) : (
-                    <User className="h-3 w-3" />
-                  )}
-                  <span className="font-bold uppercase text-[9px] tracking-wider">
-                    {isAiSummary ? "AI Insight" : "Your Note"}
-                  </span>
-                </div>
-                {isAiSummary ? insight.userNote.replace("AI Summary:", "").trim() : (insight.userNote || "Click to add a note...")}
+            insight.userNote && (
+              <div className="space-y-2">
+                {insight.userNote.split('\n\n').map((part: string, idx: number) => {
+                  const isPartAi = part.startsWith('AI Insight:') || part.startsWith('AI Summary:');
+                  return (
+                    <div 
+                      key={idx}
+                      className={cn(
+                        "p-2.5 rounded-lg border text-[11px] leading-relaxed cursor-pointer hover:border-indigo-500/30 transition-colors",
+                        isPartAi 
+                          ? "bg-indigo-500/5 border-indigo-500/10 text-indigo-900/80" 
+                          : "bg-muted/50 border-border text-muted-foreground"
+                      )}
+                      onClick={() => !isPartAi && setIsEditingNote(true)}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1 opacity-70">
+                        {isPartAi ? (
+                          <Sparkles className="h-3 w-3 text-indigo-500" />
+                        ) : (
+                          <User className="h-3 w-3" />
+                        )}
+                        <span className="font-bold uppercase text-[9px] tracking-wider">
+                          {isPartAi ? "AI Insight" : "Your Note"}
+                        </span>
+                      </div>
+                      {isPartAi ? part.replace(/AI (Insight|Summary):/, "").trim() : part}
+                    </div>
+                  )
+                })}
               </div>
             )
           )}
