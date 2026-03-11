@@ -72,7 +72,26 @@ export default function DashboardPage() {
 
   React.useEffect(() => {
     fetchInsights()
-  }, [view])
+
+    // Real-time subscription for new insights
+    const channel = supabase
+      .channel('realtime-insights')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'insights' },
+        (payload) => {
+          console.log('Real-time insight added:', payload.new)
+          // Refresh the list to include the new insight
+          // We call it with current searchQuery and view to maintain filters
+          fetchInsights(searchQuery, view)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [view, searchQuery])
 
   return (
     <SidebarProvider>
