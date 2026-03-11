@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { useEffect, useSearchParams } from "next/navigation"
 import { AppSidebar } from "@/components/app-sidebar"
 import { supabase } from "@/lib/supabase"
 import {
