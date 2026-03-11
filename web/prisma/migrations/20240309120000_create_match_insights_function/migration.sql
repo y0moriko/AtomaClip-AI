@@ -24,8 +24,8 @@ RETURNS TABLE (
   tags text[],
   "userId" text,
   "isFavorite" boolean,
-  "createdAt" timestamp with time zone,
-  "updatedAt" timestamp with time zone,
+  "createdAt" timestamp(3) without time zone,
+  "updatedAt" timestamp(3) without time zone,
   similarity float
 )
 LANGUAGE plpgsql
@@ -53,6 +53,3 @@ BEGIN
   LIMIT match_count;
 END;
 $$;
-
--- Add index for faster vector search (run after you have some data)
--- CREATE INDEX IF NOT EXISTS insights_embedding_idx ON insights USING ivfflat (embedding vector_cosine_ops);
