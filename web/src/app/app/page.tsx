@@ -101,12 +101,12 @@ export default function DashboardPage() {
           {!searchQuery && (
             <div className="grid auto-rows-min gap-4 md:grid-cols-3 mb-4">
               <Card 
-                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'all' ? 'ring-primary shadow-sm' : 'ring-border/50 hover:ring-border'}`}
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'all' ? 'ring-indigo-500 shadow-sm' : 'ring-border/50 hover:ring-border'}`}
                 onClick={() => setView('all')}
               >
                 <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
                   <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Atoms</CardTitle>
-                  <Library className={`h-4 w-4 ${view === 'all' ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Library className={`h-4 w-4 ${view === 'all' ? 'text-indigo-500' : 'text-muted-foreground'}`} />
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
                   <div className="text-2xl font-bold">{view === 'all' ? insights.length : '--'}</div>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
           {(searchQuery || view !== "all") && (
             <div className="mb-6 flex items-center gap-3">
               {searchQuery && (
-                <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/5 text-primary border-primary/20">
+                <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-500/5 text-indigo-600 border-indigo-500/20">
                   Query: {searchQuery}
                 </Badge>
               )}
