@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { getGeminiEmbedding } from "@/lib/gemini";
 
 const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
 
@@ -102,16 +103,9 @@ async function getAiSummary(content: string): Promise<string | null> {
 
 async function getAiEmbedding(content: string): Promise<number[] | null> {
   try {
-    const result = await hf.featureExtraction({
-      model: "sentence-transformers/all-mpnet-base-v2",
-      inputs: content
-    });
-    
-    const arr = result as unknown as (number | number[])[];
-    if (Array.isArray(arr)) {
-      if (typeof arr[0] === 'number') return arr as number[];
-      if (Array.isArray(arr[0])) return arr[0] as number[];
-    }
+    // Upgraded to Gemini Embeddings
+    const embedding = await getGeminiEmbedding(content);
+    return (embedding as number[]) || null;
   } catch (err) {
     console.error("Embedding failed:", err);
   }

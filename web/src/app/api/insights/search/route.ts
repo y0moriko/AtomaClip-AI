@@ -3,11 +3,9 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+import { getGeminiEmbedding } from "@/lib/gemini";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,26 +55,15 @@ export async function POST(req: Request) {
     let usedKeywordFallback = false;
 
     try {
-      // Try Vector Search
-      const embeddingResult = await hf.featureExtraction({
-        model: "sentence-transformers/all-mpnet-base-v2",
-        inputs: query
-      });
-      
-      const arr = embeddingResult as unknown as (number | number[])[];
-      let embedding: number[] | null = null;
-      
-      if (Array.isArray(arr)) {
-        if (typeof arr[0] === 'number') embedding = arr as number[];
-        else if (Array.isArray(arr[0])) embedding = arr[0] as number[];
-      }
+      // Upgraded to Gemini Embeddings
+      const embedding = await getGeminiEmbedding(query);
 
       if (embedding) {
         insights = await prisma.$queryRaw`
           SELECT * FROM match_insights(
             ${embedding}::vector,
-            0.3,
-            10
+            0.4,
+            15
           )
           WHERE "userId" = ${dbUser.id}
         `;
