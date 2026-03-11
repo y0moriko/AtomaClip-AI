@@ -38,7 +38,7 @@ const data = {
   user: {
     name: "Researcher",
     email: "test@atomaclip.ai",
-    avatar: "/avatars/avatar.jpg",
+    avatar: "",
   },
   teams: [
     {
