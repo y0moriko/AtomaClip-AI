@@ -13,6 +13,9 @@ const serif = IBM_Plex_Serif({
 export const metadata: Metadata = {
   title: "AtomaClip AI | AI-Powered Knowledge Capture",
   description: "Capture atomic web insights with AI auto-tagging and semantic search. Build your personal knowledge brain.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
