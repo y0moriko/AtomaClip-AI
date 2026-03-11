@@ -91,6 +91,7 @@ const data = {
         {
           title: "AI Tagging",
           url: "/app/tagging",
+          badge: "Coming Soon"
         },
       ],
     },
