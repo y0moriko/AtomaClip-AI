@@ -21,7 +21,7 @@ import SearchBar from "@/components/SearchBar"
 import InsightCard from "@/components/InsightCard"
 import { Skeleton } from "@/components/ui/skeleton"
 import { motion, AnimatePresence } from "framer-motion"
-import { Library, Sparkles } from "lucide-react"
+import { Library, Sparkles, Star } from "lucide-react"
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -50,8 +50,8 @@ export default function DashboardPage() {
 
       if (!query) {
         if (currentView === "recent") {
-          // Just an example: items from last 24h or first 5
-          filteredData = filteredData.slice(0, 5)
+          const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
+          filteredData = filteredData.filter((i: any) => new Date(i.createdAt) > oneDayAgo)
         } else if (currentView === "starred") {
           filteredData = filteredData.filter((i: any) => i.isFavorite)
         }
@@ -67,8 +67,6 @@ export default function DashboardPage() {
   }
 
   React.useEffect(() => {
-    // Basic view switching logic based on URL hash or similar could go here
-    // For now we'll just handle it via state
     fetchInsights()
   }, [view])
 
@@ -103,7 +101,7 @@ export default function DashboardPage() {
           {!searchQuery && (
             <div className="grid auto-rows-min gap-4 md:grid-cols-3 mb-4">
               <Card 
-                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'all' ? 'ring-primary' : 'ring-border/50 hover:ring-border'}`}
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'all' ? 'ring-primary shadow-sm' : 'ring-border/50 hover:ring-border'}`}
                 onClick={() => setView('all')}
               >
                 <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
@@ -111,12 +109,12 @@ export default function DashboardPage() {
                   <Library className={`h-4 w-4 ${view === 'all' ? 'text-primary' : 'text-muted-foreground'}`} />
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <div className="text-2xl font-bold">{insights.length}</div>
+                  <div className="text-2xl font-bold">{view === 'all' ? insights.length : '--'}</div>
                   <p className="text-[10px] text-muted-foreground mt-1">Full library</p>
                 </CardContent>
               </Card>
               <Card 
-                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'recent' ? 'ring-primary' : 'ring-border/50 hover:ring-border'}`}
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'recent' ? 'ring-indigo-500 shadow-sm' : 'ring-border/50 hover:ring-border'}`}
                 onClick={() => setView('recent')}
               >
                 <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
@@ -124,14 +122,23 @@ export default function DashboardPage() {
                   <Sparkles className={`h-4 w-4 ${view === 'recent' ? 'text-indigo-500' : 'text-muted-foreground'}`} />
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <div className="text-2xl font-bold">New</div>
-                  <p className="text-[10px] text-muted-foreground mt-1">Last 5 additions</p>
+                  <div className="text-2xl font-bold">{view === 'recent' ? insights.length : 'New'}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Last 24 hours</p>
                 </CardContent>
               </Card>
-              <div className="aspect-video rounded-xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 flex flex-col items-center justify-center p-4 text-center">
-                 <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">MVP Version</p>
-                 <p className="text-[11px] text-muted-foreground max-w-[180px]">Your research is being synchronized in real-time.</p>
-              </div>
+              <Card 
+                className={`bg-background border-none shadow-none ring-1 cursor-pointer transition-all ${view === 'starred' ? 'ring-yellow-500 shadow-sm' : 'ring-border/50 hover:ring-border'}`}
+                onClick={() => setView('starred')}
+              >
+                <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
+                  <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Starred</CardTitle>
+                  <Star className={`h-4 w-4 ${view === 'starred' ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <div className="text-2xl font-bold">{view === 'starred' ? insights.length : 'Saved'}</div>
+                  <p className="text-[10px] text-muted-foreground mt-1">Your favorites</p>
+                </CardContent>
+              </Card>
             </div>
           )}
 
@@ -143,7 +150,9 @@ export default function DashboardPage() {
                 </Badge>
               )}
               {view !== "all" && !searchQuery && (
-                <Badge variant="outline" className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-500/5 text-indigo-500 border-indigo-500/20 capitalize">
+                <Badge variant="outline" className={`px-3 py-1 rounded-lg text-xs font-bold capitalize border-opacity-20 ${
+                  view === 'recent' ? 'bg-indigo-500/5 text-indigo-500 border-indigo-500' : 'bg-yellow-500/5 text-yellow-600 border-yellow-500'
+                }`}>
                   Filter: {view}
                 </Badge>
               )}
@@ -186,10 +195,20 @@ export default function DashboardPage() {
             {!loading && insights.length === 0 && (
               <div className="flex flex-col items-center justify-center py-32 text-center">
                 <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mb-4">
-                  <Library className="w-6 h-6 text-muted-foreground/40" />
+                  {view === 'starred' ? (
+                    <Star className="w-6 h-6 text-muted-foreground/40" />
+                  ) : (
+                    <Library className="w-6 h-6 text-muted-foreground/40" />
+                  )}
                 </div>
-                <h3 className="text-sm font-semibold text-foreground">Vault section is empty</h3>
-                <p className="text-xs text-muted-foreground mt-1">Start clipping insights to see them here.</p>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {view === 'recent' ? "No recent activity" : view === 'starred' ? "No starred atoms" : "Vault section is empty"}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {view === 'recent' ? "Clips from the last 24 hours will appear here." : 
+                   view === 'starred' ? "Mark atoms as favorite to see them in this list." :
+                   "Start clipping insights to see them here."}
+                </p>
               </div>
             )}
           </div>
