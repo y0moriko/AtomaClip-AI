@@ -34,8 +34,10 @@ export async function getOpenRouterTags(content: string): Promise<string[]> {
   try {
     const openai = getOpenAI();
     const prompt = `
-      Analyze this text and return exactly 3-5 short, one-word tags as a JSON array of strings.
-      Focus on the main topics.
+      Analyze this text and return exactly 3-5 highly descriptive, one-word tags as a JSON array of strings.
+      Avoid generic tags like "research" or "article" unless they are the primary topic.
+      Be specific to the subject matter (e.g., "neuroscience", "saas", "cooking", "productivity").
+      
       Text: "${content.slice(0, 1000)}"
     `;
 
@@ -45,12 +47,12 @@ export async function getOpenRouterTags(content: string): Promise<string[]> {
       response_format: { type: "json_object" }
     });
 
-    const contentStr = response.choices[0].message.content || '{"tags": ["research"]}';
+    const contentStr = response.choices[0].message.content || '{"tags": ["insight"]}';
     const data = JSON.parse(contentStr);
-    return Array.isArray(data.tags) ? data.tags.map((t: string) => t.toLowerCase()) : ["research"];
+    return Array.isArray(data.tags) ? data.tags.map((t: string) => t.toLowerCase()) : ["insight"];
   } catch (error) {
     console.error("OpenRouter Tagging Error:", error);
-    return ["research"];
+    return ["insight"];
   }
 }
 
