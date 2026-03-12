@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getOpenRouterEmbedding } from "@/lib/openrouter";
+import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,11 +46,15 @@ export async function POST(req: Request) {
       return NextResponse.json([], { headers: corsHeaders });
     }
 
-    const { query } = await req.json();
+    const body = await req.json();
+    const { query, project_id } = body;
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400, headers: corsHeaders });
     }
+
+    // Get personal workspace context
+    const personalWorkspace = await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
 
     let insights: any[] = [];
     let usedKeywordFallback = false;
@@ -59,13 +64,15 @@ export async function POST(req: Request) {
       const embedding = await getOpenRouterEmbedding(query);
 
       if (embedding) {
+        // Now passing workspaceId and optional projectId to the SQL function
         insights = await prisma.$queryRaw`
           SELECT * FROM match_insights(
             ${embedding}::vector,
             0.4,
-            15
+            15,
+            ${personalWorkspace.id},
+            ${project_id || null}
           )
-          WHERE "userId" = ${dbUser.id}
         `;
       } else {
         usedKeywordFallback = true;
