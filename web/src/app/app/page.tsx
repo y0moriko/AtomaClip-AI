@@ -254,34 +254,95 @@ export default function DashboardPage() {
             </AnimatePresence>
 
             {!loading && insights.length === 0 && (
-              <div className="space-y-8">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20">
+              <div className="space-y-12 max-w-5xl mx-auto pb-20">
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <motion.div 
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/20"
+                  >
                     <Sparkles className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground">
-                    Welcome to your knowledge brain
+                  </motion.div>
+                  <h3 className="text-2xl font-bold text-foreground tracking-tight">
+                    Your Research Engine is Ready
                   </h3>
-                  <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                    Start clipping insights from anywhere on the web. Here's how it works:
+                  <p className="text-muted-foreground mt-2 max-w-md">
+                    AtomaClip transforms how you gather and use information. Follow these 2 simple steps to start building your "Team Brain."
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {SAMPLE_CLIPS.map((sample) => (
-                    <InsightCard key={sample.id} insight={sample} isSample />
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                  {/* Step 1 */}
+                  <motion.div 
+                    initial={{ x: -20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex flex-col gap-4 bg-background border border-border/50 rounded-3xl p-6 shadow-sm hover:border-indigo-500/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold text-sm">1</div>
+                      <h4 className="font-bold text-lg">Capture Anything</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Highlight any text on any website, right-click, and select <span className="font-bold text-foreground">"Capture to AtomaClip"</span>.
+                    </p>
+                    <div className="relative rounded-xl overflow-hidden border border-border aspect-video bg-muted/30 group">
+                      <img 
+                        src="/step-1-highlight.png" 
+                        alt="Highlight and right-click to capture" 
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  </motion.div>
+
+                  {/* Step 2 */}
+                  <motion.div 
+                    initial={{ x: 20, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex flex-col gap-4 bg-background border border-border/50 rounded-3xl p-6 shadow-sm hover:border-indigo-500/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 text-indigo-600 flex items-center justify-center font-bold text-sm">2</div>
+                      <h4 className="font-bold text-lg">Contextualize & Organize</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Add a personal note and pick a <span className="font-bold text-foreground">Collection</span>. Our AI will automatically tag and summarize it.
+                    </p>
+                    <div className="relative rounded-xl overflow-hidden border border-border aspect-video bg-muted/30 group">
+                      <img 
+                        src="/step-2-popup.png" 
+                        alt="The AtomaClip capture popup" 
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  </motion.div>
                 </div>
 
-                <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-6 text-center">
-                  <h4 className="font-bold text-foreground mb-2">Ready to start clipping?</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Install the Chrome extension to capture insights from any webpage.
+                <div className="flex flex-col items-center gap-6">
+                  <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                    <div className="h-[1px] w-8 bg-border"></div>
+                    Sample Atoms Below
+                    <div className="h-[1px] w-8 bg-border"></div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full opacity-60 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-500">
+                    {SAMPLE_CLIPS.map((sample) => (
+                      <InsightCard key={sample.id} insight={sample} isSample />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-indigo-600 rounded-3xl p-10 text-center text-white shadow-2xl shadow-indigo-500/20 overflow-hidden relative">
+                  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.1),transparent)] pointer-events-none"></div>
+                  <h4 className="text-2xl font-bold mb-3">Don't have the extension yet?</h4>
+                  <p className="text-indigo-100 mb-8 max-w-sm mx-auto">
+                    The extension is the portal to your research brain. Install it once, use it everywhere.
                   </p>
                   <Link href="/download">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-2">
-                      <Sparkles className="w-4 h-4" />
-                      Install Extension
+                    <Button className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold px-8 h-12 text-base rounded-full shadow-lg transition-transform active:scale-95">
+                      <Sparkles className="w-5 h-5 mr-2" />
+                      Get Browser Extension
                     </Button>
                   </Link>
                 </div>

@@ -1,0 +1,32 @@
+
+🚀 Big News: Atoma Clip Beta is LIVE!
+
+Ever feel like you’re saving a million bookmarks or highlights but never actually doing anything with them? We’ve built something to fix that. 🧠
+
+What is Atoma Clip?
+It’s an AI-powered Chrome Extension and research assistant. It doesn’t just store your links; it actually understands the specific insights you highlight while you browse.
+
+What can you do in this Beta?
+
+Smart Chrome Capture: Highlight text on any website, right-click, and clip it directly to your "Personal Vault" or a specific "Collection."
+
+AI Auto-Sort: Stop worrying about folders. Let the AI analyze and organize your clips into the right projects for you.
+
+Ask Your Research: This is the magic part. Inside the dashboard, you can chat with your saved data. Ask: "What are the recurring patterns here?" and the AI will answer based ONLY on the clips you've saved.
+
+How to join:
+
+Log in at: https://atomaclip-ai-production.up.railway.app
+
+Install the Chrome Extension (Download link is right inside your dashboard).
+
+Start atomizing your research!
+
+We want your feedback! 💬
+After trying it out, I’d love to hear what you think! 🔥 You can share your thoughts by:
+
+Answering the Support & Feedback section directly in your dashboard.
+
+Filling out this quick Google Form: https://docs.google.com/forms/d/e/1FAIpQLSePg5VszEZk61sPFBQeXNoNNyddD49sdmpqOVq09-y-Q9rsQQ/viewform?usp=header
+
+Let’s build the future! 🔥🚀
