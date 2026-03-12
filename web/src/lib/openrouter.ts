@@ -40,7 +40,7 @@ export async function getOpenRouterTags(content: string): Promise<string[]> {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "google/gemini-flash-1.5",
+      model: "google/gemini-2.0-flash-001",
       messages: [{ role: "user", content: prompt }],
       response_format: { type: "json_object" }
     });
@@ -66,7 +66,7 @@ export async function getOpenRouterSummary(content: string): Promise<string | nu
     `;
 
     const response = await openai.chat.completions.create({
-      model: "google/gemini-flash-1.5",
+      model: "google/gemini-2.0-flash-001",
       messages: [{ role: "user", content: prompt }],
     });
 
@@ -102,7 +102,7 @@ export async function generateDeepInsight(query: string, insights: any[]) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "google/gemini-flash-1.5",
+      model: "google/gemini-2.0-flash-001",
       messages: [
         { role: "user", content: prompt }
       ],
@@ -137,7 +137,7 @@ export async function suggestProject(content: string, projects: { id: string, na
     `;
 
     const response = await openai.chat.completions.create({
-      model: "google/gemini-flash-1.5",
+      model: "google/gemini-2.0-flash-001",
       messages: [{ role: "user", content: prompt }],
     });
 

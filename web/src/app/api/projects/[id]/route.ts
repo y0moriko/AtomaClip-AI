@@ -24,6 +24,9 @@ export async function GET(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+    if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
     const project = await prisma.project.findUnique({
       where: { id: params.id },
       include: {
@@ -41,7 +44,7 @@ export async function GET(
     const member = await prisma.workspaceMember.findUnique({
       where: {
         userId_workspaceId: {
-          userId: user.id,
+          userId: dbUser.id,
           workspaceId: project.workspaceId
         }
       }
@@ -80,6 +83,9 @@ export async function DELETE(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+    if (!dbUser) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
     const project = await prisma.project.findUnique({
       where: { id: params.id },
     });
@@ -92,7 +98,7 @@ export async function DELETE(
     const member = await prisma.workspaceMember.findUnique({
       where: {
         userId_workspaceId: {
-          userId: user.id,
+          userId: dbUser.id,
           workspaceId: project.workspaceId
         }
       }
