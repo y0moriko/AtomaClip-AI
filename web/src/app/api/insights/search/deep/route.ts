@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { generateDeepInsight } from "@/lib/openrouter";
 import { createServerClient } from '@supabase/ssr'
