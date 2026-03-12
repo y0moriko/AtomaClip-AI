@@ -34,25 +34,48 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-const data = {
-  user: {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [workspaces, setWorkspaces] = React.useState<any[]>([])
+  const [activeWorkspace, setActiveWorkspace] = React.useState<any>(null)
+  const [projects, setProjects] = React.useState<any[]>([])
+  const [user, setUser] = React.useState<any>({
     name: "Researcher",
-    email: "test@atomaclip.ai",
+    email: "",
     avatar: "",
-  },
-  teams: [
-    {
-      name: "Personal Vault",
-      logo: GalleryVerticalEnd,
-      plan: "Pro",
-    },
-    {
-      name: "Team Brain",
-      logo: AudioWaveform,
-      plan: "Enterprise",
-    },
-  ],
-  navMain: [
+  })
+
+  const loadData = React.useCallback(async () => {
+    try {
+      const res = await fetch('/api/workspaces')
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setWorkspaces(data)
+        if (data.length > 0) {
+          setActiveWorkspace((prev: any) => {
+            const current = data.find(w => w.id === prev?.id)
+            return current || data[0]
+          })
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load workspaces", err)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  React.useEffect(() => {
+    if (activeWorkspace) {
+      const current = workspaces.find(w => w.id === activeWorkspace.id)
+      if (current) {
+        setProjects(current.projects || [])
+      }
+    }
+  }, [activeWorkspace, workspaces])
+
+  const navMain = [
     {
       title: "Workspace",
       url: "/app",
@@ -115,29 +138,41 @@ const data = {
         },
       ],
     },
-  ],
-  projects: [
-    {
-      name: "Collections",
-      url: "#",
-      icon: Frame,
-      badge: "Coming Soon"
-    },
-  ],
-}
+  ]
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const formattedTeams = workspaces.map(w => ({
+    name: w.name,
+    logo: w.type === 'personal' ? GalleryVerticalEnd : AudioWaveform,
+    plan: w.type === 'personal' ? 'Pro' : 'Enterprise',
+    id: w.id
+  }))
+
+  const formattedProjects = projects.map(p => ({
+    id: p.id,
+    name: p.name,
+    url: `/app/projects/${p.id}`,
+    icon: Frame,
+  }))
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher 
+          teams={formattedTeams.length > 0 ? formattedTeams : [
+            { name: "Loading...", logo: GalleryVerticalEnd, plan: "Wait" }
+          ]} 
+        />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={navMain} />
+        <NavProjects 
+          projects={formattedProjects} 
+          workspaceId={activeWorkspace?.id}
+          onProjectCreated={loadData}
+        />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

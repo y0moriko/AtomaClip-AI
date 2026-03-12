@@ -6,6 +6,7 @@ import prisma from "@/lib/prisma";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary } from "@/lib/openrouter";
+import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,7 +92,8 @@ export async function POST(req: Request) {
       context_after, 
       user_note, 
       source_url, 
-      page_title 
+      page_title,
+      project_id // New optional project_id
     } = body;
 
     if (!content) {
@@ -108,6 +110,9 @@ export async function POST(req: Request) {
         }
       })
     }
+
+    // Get or Create Personal Workspace
+    const personalWorkspace = await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
 
     if (dbUser.subscriptionTier === "free") {
       const startOfMonth = new Date();
@@ -168,11 +173,11 @@ export async function POST(req: Request) {
           await prisma.$executeRaw`
             INSERT INTO insights (
               id, content, "contextBefore", "contextAfter", "userNote", 
-              "sourceUrl", "pageTitle", tags, "userId", "createdAt", "updatedAt",
+              "sourceUrl", "pageTitle", tags, "userId", "workspaceId", "projectId", "createdAt", "updatedAt",
               embedding
             ) VALUES (
               ${insightId}, ${content}, ${context_before}, ${context_after}, ${finalNote},
-              ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, NOW(), NOW(),
+              ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, ${personalWorkspace.id}, ${project_id || null}, NOW(), NOW(),
               CAST(${embedding}::float8[] AS vector)
             )
           `;
@@ -194,7 +199,9 @@ export async function POST(req: Request) {
             sourceUrl: source_url,
             pageTitle: page_title,
             tags,
-            userId: dbUser.id
+            userId: dbUser.id,
+            workspaceId: personalWorkspace.id,
+            projectId: project_id || null
           }
         });
       }

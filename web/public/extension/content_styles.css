@@ -38,6 +38,56 @@
   text-transform: uppercase;
 }
 
+.atomaclip-field {
+  margin-bottom: 20px;
+}
+
+.atomaclip-field label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.atomaclip-select {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  color: white;
+  font-size: 13px;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  appearance: none;
+  cursor: pointer;
+}
+
+.atomaclip-select:focus {
+  border-color: #6366f1;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.atomaclip-select optgroup {
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.atomaclip-select option {
+  background: #0f172a;
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+}
+
 .atomaclip-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.03);
@@ -48,7 +98,6 @@
   font-size: 14px;
   outline: none;
   transition: all 0.2s;
-  margin-bottom: 16px;
   box-sizing: border-box;
 }
 

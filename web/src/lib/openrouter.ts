@@ -108,3 +108,36 @@ export async function generateDeepInsight(query: string, insights: any[]) {
     return null;
   }
 }
+
+/**
+ * Suggests the best project for a given insight based on available projects.
+ */
+export async function suggestProject(content: string, projects: { id: string, name: string, description?: string | null }[]): Promise<string | null> {
+  if (projects.length === 0) return null;
+
+  try {
+    const projectList = projects.map(p => `- ID: ${p.id}, Name: ${p.name}${p.description ? `, Description: ${p.description}` : ""}`).join("\n");
+    
+    const prompt = `
+      You are a research assistant. Given an "Atomic Clip" (highlighted text) and a list of research projects, identify which project is the best fit for this clip.
+      
+      Clip Content: "${content.slice(0, 1000)}"
+      
+      Available Projects:
+      ${projectList}
+      
+      Return ONLY the ID of the best matching project. If none are a good fit, return "null".
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: "google/gemini-flash-1.5",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const result = response.choices[0].message.content?.trim();
+    return result === "null" || !result ? null : result;
+  } catch (error) {
+    console.error("OpenRouter Project Suggestion Error:", error);
+    return null;
+  }
+}

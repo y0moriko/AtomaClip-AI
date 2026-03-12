@@ -12,16 +12,55 @@ datasource db {
 }
 
 model User {
-  id                String    @id @default(uuid())
+  id                String            @id @default(uuid())
   name              String?
-  email             String    @unique
-  subscriptionTier  String    @default("free") // 'free' or 'pro'
+  email             String            @unique
+  subscriptionTier  String            @default("free") // 'free' or 'pro'
   slackWebhookUrl   String?
+  workspaces        WorkspaceMember[]
   insights          Insight[]
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   @@map("users")
+}
+
+model Workspace {
+  id        String            @id @default(uuid())
+  name      String
+  type      String            @default("personal") // 'personal' or 'team'
+  projects  Project[]
+  members   WorkspaceMember[]
+  insights  Insight[]
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(uuid())
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  role        String    @default("member") // 'owner', 'admin', 'member'
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?   @db.Text
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  insights    Insight[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("projects")
 }
 
 model Insight {
@@ -45,7 +84,13 @@ model Insight {
 
   // Relationships
   userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  workspaceId   String
+  workspace     Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  
+  projectId     String?
+  project       Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
   @@map("insights")
 }
