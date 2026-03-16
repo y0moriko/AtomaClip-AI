@@ -151,6 +151,7 @@ function showWhyPopup(data) {
     
     try {
       const response = await apiRequest("/api/insights/capture", "POST", finalData);
+      console.log("Capture response:", response);
       
       if (response.success) {
         aiState.innerHTML = `

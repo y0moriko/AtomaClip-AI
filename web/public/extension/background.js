@@ -61,6 +61,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 
   if (request.action === "API_REQUEST") {
+    console.log("API_REQUEST received:", request.endpoint);
     (async () => {
       try {
         const token = await getAuthToken();
