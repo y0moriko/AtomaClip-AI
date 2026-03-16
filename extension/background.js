@@ -15,47 +15,78 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "GET_SESSION") {
-    console.log("Background - GET_SESSION request received");
-    
+async function getAuthToken() {
+  return new Promise((resolve) => {
     chrome.cookies.getAll({ url: PRODUCTION_URL }, (cookies) => {
-      console.log(`Background - Found ${cookies.length} cookies for ${PRODUCTION_URL}`);
-      
-      // Find the auth token cookie (Supabase SSR format)
       const tokenCookie = cookies.find(c => c.name.includes("auth-token"));
       
       if (tokenCookie) {
-        console.log("Background - Found auth-token cookie:", tokenCookie.name);
         let rawValue = decodeURIComponent(tokenCookie.value);
         
-        // Supabase SSR often prefixes base64-encoded JSON objects with "base64-"
         if (rawValue.startsWith("base64-")) {
           try {
-            console.log("Background - Decoding base64 cookie...");
             rawValue = atob(rawValue.substring(7));
           } catch (e) {
-            console.error("Background - Base64 decode failed:", e.message);
+            console.error("Base64 decode failed:", e.message);
           }
         }
 
         try {
           const tokenData = JSON.parse(rawValue);
           if (tokenData.access_token) {
-            console.log("Background - Successfully extracted access_token JWT");
-            sendResponse({ accessToken: tokenData.access_token });
+            resolve(tokenData.access_token);
             return;
           }
         } catch (e) {
-          console.log("Background - Cookie not JSON, using raw value as token");
-          sendResponse({ accessToken: rawValue });
+          resolve(rawValue);
           return;
         }
       }
       
-      console.warn("Background - No auth-token cookie found");
-      sendResponse({ error: "No session found in cookies" });
+      resolve(null);
+    });
+  });
+}
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "GET_SESSION") {
+    getAuthToken().then(token => {
+      if (token) {
+        sendResponse({ accessToken: token });
+      } else {
+        sendResponse({ error: "No session found" });
+      }
     });
     return true; 
+  }
+
+  if (request.action === "API_REQUEST") {
+    (async () => {
+      try {
+        const token = await getAuthToken();
+        const headers = { "Content-Type": "application/json" };
+        
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`${PRODUCTION_URL}${request.endpoint}`, {
+          method: request.method || "GET",
+          headers,
+          body: request.body ? JSON.stringify(request.body) : undefined
+        });
+
+        const data = await response.json().catch(() => ({}));
+        
+        if (response.ok) {
+          sendResponse({ success: true, data });
+        } else {
+          sendResponse({ success: false, error: data.error || "API Error", status: response.status });
+        }
+      } catch (err) {
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
   }
 });

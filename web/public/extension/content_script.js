@@ -36,6 +36,19 @@ async function getAuthHeader() {
   })
 }
 
+async function apiRequest(endpoint, method = "GET", body = null) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({
+      action: "API_REQUEST",
+      endpoint,
+      method,
+      body
+    }, (response) => {
+      resolve(response);
+    });
+  });
+}
+
 function getGhostParagraphs() {
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return { before: "", after: "" };
@@ -92,12 +105,9 @@ function showWhyPopup(data) {
   // Load projects
   (async () => {
     try {
-      const apiUrl = await getApiUrl();
-      const authHeader = await getAuthHeader();
-      const res = await fetch(`${apiUrl}/api/workspaces`, { headers: authHeader });
-      if (res.ok) {
-        const workspaces = await res.json();
-        workspaces.forEach(ws => {
+      const response = await apiRequest("/api/workspaces");
+      if (response.success) {
+        response.data.forEach(ws => {
           const group = document.createElement("optgroup");
           group.label = ws.name;
           ws.projects.forEach(p => {
@@ -137,21 +147,9 @@ function showWhyPopup(data) {
     console.log("Final data:", finalData);
     
     try {
-      const apiUrl = await getApiUrl();
-      const authHeader = await getAuthHeader();
+      const response = await apiRequest("/api/insights/capture", "POST", finalData);
       
-      const response = await fetch(`${apiUrl}/api/insights/capture`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...authHeader
-        },
-        body: JSON.stringify(finalData)
-      });
-      
-      const resData = await response.json().catch(() => ({}));
-      
-      if (response.ok) {
+      if (response.success) {
         aiState.innerHTML = `
           <div class="atomaclip-success-check">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -160,8 +158,8 @@ function showWhyPopup(data) {
         `;
         setTimeout(() => popup.remove(), 1500);
       } else {
-        const errorMsg = resData.error || "API Error";
-        throw new Error(`${errorMsg} (${response.status})`);
+        const errorMsg = response.error || "API Error";
+        throw new Error(`${errorMsg}`);
       }
     } catch (err) {
       console.log("Error details:", err);
