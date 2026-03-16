@@ -1,6 +1,6 @@
 // AtomaClip AI Content Script - Professional Nova Style
 console.log("AtomaClip content script loaded");
-const DEFAULT_API_URL = "https://atomaclip-ai-production.up.railway.app";
+const DEFAULT_API_URL = "https://atomaclip-ai.onrender.com";
 const SUPABASE_URL = "https://luoayfkneqjudcizrsoo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1b2F5ZmtuZXFqdWRjaXpyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTEzMjAsImV4cCI6MjA4ODUyNzMyMH0.pKijxVzN5b7jdL1am3yIAeXezIx8_9NB1bDTzCHQNgY";
 

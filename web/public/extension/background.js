@@ -1,5 +1,5 @@
 // AtomaClip AI Background Service Worker
-const PRODUCTION_URL = "https://atomaclip-ai-production.up.railway.app";
+const PRODUCTION_URL = "https://atomaclip-ai.onrender.com";
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
