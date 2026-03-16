@@ -24,8 +24,14 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    let dbUser = await prisma.user.findUnique({
+    // Use upsert to handle race conditions where multiple requests try to create the same user
+    let dbUser = await prisma.user.upsert({
       where: { email: user.email! },
+      update: {}, // No updates if user already exists
+      create: {
+        email: user.email!,
+        name: user.user_metadata?.name || user.email?.split('@')[0],
+      },
       include: {
         workspaces: {
           include: {
@@ -39,28 +45,11 @@ export async function GET() {
       }
     });
 
-    if (!dbUser) {
-      // Create user and default workspace
-      dbUser = await prisma.user.create({
-        data: {
-          email: user.email!,
-          name: user.user_metadata?.name || user.email?.split('@')[0],
-        },
-        include: {
-          workspaces: {
-            include: {
-              workspace: {
-                include: {
-                  projects: true
-                }
-              }
-            }
-          }
-        }
-      });
-      await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
-      
-      // Re-fetch to get the workspace
+    // Ensure the personal workspace exists
+    await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
+    
+    // If the user was just created, they might not have the workspace in the initial upsert include
+    if (dbUser.workspaces.length === 0) {
       dbUser = await prisma.user.findUnique({
         where: { id: dbUser.id },
         include: {

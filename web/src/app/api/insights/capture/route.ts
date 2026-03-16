@@ -100,16 +100,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Content is required" }, { status: 400, headers: corsHeaders });
     }
 
-    let dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
-    
-    if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          email: user.email!,
-          name: user.user_metadata?.name || user.email?.split('@')[0],
-        }
-      })
-    }
+    // Use upsert to handle race conditions where multiple requests try to create the same user
+    let dbUser = await prisma.user.upsert({
+      where: { email: user.email! },
+      update: {},
+      create: {
+        email: user.email!,
+        name: user.user_metadata?.name || user.email?.split('@')[0],
+      }
+    });
 
     // Get or Create Personal Workspace
     const personalWorkspace = await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
@@ -139,29 +138,35 @@ export async function POST(req: Request) {
     let finalNote = user_note || "";
 
     try {
-      // Always generate tags, embedding, and summary
-      const tasks: any[] = [
+      // Use allSettled to be resilient to partial AI failures (e.g. rate limits)
+      const results = await Promise.allSettled([
         getOpenRouterTags(content),
         getOpenRouterEmbedding(content),
         getOpenRouterSummary(content)
-      ];
+      ]);
       
-      const [aiTags, aiEmbedding, aiSummary] = await Promise.all(tasks);
-      
-      tags = aiTags;
-      embedding = aiEmbedding;
-      
-      // Combine user note with AI Insight
-      if (aiSummary) {
+      if (results[0].status === "fulfilled") tags = results[0].value;
+      if (results[1].status === "fulfilled" && results[1].value) {
+        embedding = results[1].value;
+      } else {
+        console.warn("Embedding generation failed or returned null");
+        aiStatus = "partial";
+      }
+
+      if (results[2].status === "fulfilled" && results[2].value) {
+        const aiSummary = results[2].value;
         const aiPart = `AI Insight: ${aiSummary}`;
         finalNote = user_note && user_note.trim() !== "" 
           ? `${user_note}\n\n${aiPart}`
           : aiPart;
       }
-      
-      if (!embedding) aiStatus = "partial";
+
+      if (results.some(r => r.status === "rejected")) {
+        console.warn("Some AI tasks rejected");
+        aiStatus = "partial";
+      }
     } catch (aiErr) {
-      console.error("AI Pipeline failed entirely");
+      console.error("Critical AI Pipeline error:", aiErr);
       aiStatus = "failed";
     }
 
