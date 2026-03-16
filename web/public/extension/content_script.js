@@ -44,7 +44,12 @@ async function apiRequest(endpoint, method = "GET", body = null) {
       method,
       body
     }, (response) => {
-      resolve(response);
+      if (chrome.runtime.lastError) {
+        console.error("Runtime error:", chrome.runtime.lastError);
+        resolve({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        resolve(response || { success: false, error: "No response from background" });
+      }
     });
   });
 }
