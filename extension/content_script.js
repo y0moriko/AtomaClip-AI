@@ -1,6 +1,6 @@
 // AtomaClip AI Content Script - Professional Nova Style
 console.log("AtomaClip content script loaded");
-const DEFAULT_API_URL = "https://atomaclip-ai-production.up.railway.app";
+const DEFAULT_API_URL = "https://atomaclip-ai.onrender.com";
 const SUPABASE_URL = "https://luoayfkneqjudcizrsoo.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1b2F5ZmtuZXFqdWRjaXpyc29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NTEzMjAsImV4cCI6MjA4ODUyNzMyMH0.pKijxVzN5b7jdL1am3yIAeXezIx8_9NB1bDTzCHQNgY";
 
@@ -32,11 +32,27 @@ async function getAuthHeader() {
           }
         });
       }
-    })
+    });
   })
 }
 
-function getGhostParagraphs() {
+async function apiRequest(endpoint, method = "GET", body = null) {
+  return new Promise((resolve) => {
+    chrome.runtime.sendMessage({
+      action: "API_REQUEST",
+      endpoint,
+      method,
+      body
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error("Runtime error:", chrome.runtime.lastError);
+        resolve({ success: false, error: chrome.runtime.lastError.message });
+      } else {
+        resolve(response || { success: false, error: "No response from background" });
+      }
+    });
+  });
+}
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return { before: "", after: "" };
   const range = selection.getRangeAt(0);
@@ -59,7 +75,17 @@ function showWhyPopup(data) {
         <div id="atomaclip-status"></div>
       </div>
       
-      <input type="text" id="atomaclip-note" class="atomaclip-input" placeholder="Optional: Add your own insight..." autofocus>
+      <div class="atomaclip-field">
+        <label>Destination Collection</label>
+        <select id="atomaclip-project" class="atomaclip-select">
+          <option value="">Library (General)</option>
+        </select>
+      </div>
+
+      <div class="atomaclip-field">
+        <label>Personal Insight</label>
+        <input type="text" id="atomaclip-note" class="atomaclip-input" placeholder="Optional: Why are you clipping this?" autofocus>
+      </div>
 
       <button id="atomaclip-save" class="atomaclip-save-btn">Capture Atom</button>
       
@@ -74,20 +100,49 @@ function showWhyPopup(data) {
 
   document.body.appendChild(popup);
   const input = popup.querySelector("#atomaclip-note");
+  const projectSelect = popup.querySelector("#atomaclip-project");
   const saveBtn = popup.querySelector("#atomaclip-save");
   const aiState = popup.querySelector("#atomaclip-ai-state");
   input.focus();
 
+  // Load projects
+  (async () => {
+    try {
+      const response = await apiRequest("/api/workspaces");
+      if (response.success) {
+        response.data.forEach(ws => {
+          const group = document.createElement("optgroup");
+          group.label = ws.name;
+          ws.projects.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.textContent = p.name;
+            group.appendChild(opt);
+          });
+          if (ws.projects.length > 0) {
+            projectSelect.appendChild(group);
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Failed to load projects in popup", err);
+    }
+  })();
+
   async function finishCapture() {
     console.log("finishCapture called");
     const userNote = input.value;
+    const projectId = projectSelect.value;
+    
     input.disabled = true;
+    projectSelect.disabled = true;
     saveBtn.disabled = true;
     input.style.opacity = "0.5";
     
     const finalData = {
       ...data,
       user_note: userNote,
+      project_id: projectId || undefined,
       page_title: document.title,
       source_url: window.location.href
     };
@@ -95,31 +150,10 @@ function showWhyPopup(data) {
     console.log("Final data:", finalData);
     
     try {
-      const apiUrl = await getApiUrl();
-      console.log("Getting auth...");
-      const authHeader = await getAuthHeader();
+      const response = await apiRequest("/api/insights/capture", "POST", finalData);
+      console.log("Capture response:", response);
       
-      if (authHeader.Authorization) {
-        console.log("Auth header token (first 10 chars):", authHeader.Authorization.substring(7, 17));
-      } else {
-        console.warn("No Authorization header generated - User might not be logged in in extension settings");
-      }
-
-      console.log("Sending to:", `${apiUrl}/api/insights/capture`);
-      const response = await fetch(`${apiUrl}/api/insights/capture`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          ...authHeader
-        },
-        body: JSON.stringify(finalData)
-      });
-      
-      console.log("Response:", response.status, response.statusText);
-      const resData = await response.json().catch(() => ({}));
-      console.log("Response Data:", resData);
-      
-      if (response.ok) {
+      if (response.success) {
         aiState.innerHTML = `
           <div class="atomaclip-success-check">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -128,13 +162,15 @@ function showWhyPopup(data) {
         `;
         setTimeout(() => popup.remove(), 1500);
       } else {
-        const errorMsg = resData.error || "API Error";
-        throw new Error(`${errorMsg} (${response.status})`);
+        const errorMsg = response.error || "API Error";
+        throw new Error(`${errorMsg}`);
       }
     } catch (err) {
       console.log("Error details:", err);
       aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px; font-weight: 600;">${err.message}</span>`;
-      setTimeout(() => popup.remove(), 3500);
+      setTimeout(() => {
+        popup.remove();
+      }, 3500);
     }
   }
 

@@ -3,11 +3,10 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+import { getOpenRouterEmbedding } from "@/lib/openrouter";
+import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -47,38 +46,33 @@ export async function POST(req: Request) {
       return NextResponse.json([], { headers: corsHeaders });
     }
 
-    const { query } = await req.json();
+    const body = await req.json();
+    const { query, project_id } = body;
 
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400, headers: corsHeaders });
     }
 
+    // Get personal workspace context
+    const personalWorkspace = await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
+
     let insights: any[] = [];
     let usedKeywordFallback = false;
 
     try {
-      // Try Vector Search
-      const embeddingResult = await hf.featureExtraction({
-        model: "sentence-transformers/all-mpnet-base-v2",
-        inputs: query
-      });
-      
-      const arr = embeddingResult as unknown as (number | number[])[];
-      let embedding: number[] | null = null;
-      
-      if (Array.isArray(arr)) {
-        if (typeof arr[0] === 'number') embedding = arr as number[];
-        else if (Array.isArray(arr[0])) embedding = arr[0] as number[];
-      }
+      // Upgraded to OpenRouter Embeddings
+      const embedding = await getOpenRouterEmbedding(query);
 
       if (embedding) {
+        // Now passing workspaceId and optional projectId to the SQL function
         insights = await prisma.$queryRaw`
           SELECT * FROM match_insights(
             ${embedding}::vector,
-            0.3,
-            10
+            0.4,
+            15,
+            ${personalWorkspace.id},
+            ${project_id || null}
           )
-          WHERE "userId" = ${dbUser.id}
         `;
       } else {
         usedKeywordFallback = true;

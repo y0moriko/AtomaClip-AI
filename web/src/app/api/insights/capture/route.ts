@@ -3,11 +3,10 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { HfInference } from "@huggingface/inference";
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
-
-const hf = new HfInference(process.env.HUGGINGFACE_API_KEY);
+import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary } from "@/lib/openrouter";
+import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,60 +63,6 @@ async function getUser(cookieStore: any, authHeader?: string) {
   return null
 }
 
-async function getAiTags(content: string): Promise<string[]> {
-  try {
-    const result = await hf.zeroShotClassification({
-      model: "facebook/bart-large-mnli",
-      inputs: content.slice(0, 500),
-      parameters: {
-        candidate_labels: ["technology", "science", "business", "health", "entertainment", "education", "politics", "sports", "news", "tips", "tutorial", "review", "opinion", "data", "research"]
-      }
-    });
-    
-    if (result && Array.isArray(result)) {
-      return result.map((r: any) => r.label.toLowerCase()).slice(0, 5);
-    }
-  } catch (err) {
-    console.error("Tagging failed:", err);
-  }
-  return ["research"];
-}
-
-async function getAiSummary(content: string): Promise<string | null> {
-  try {
-    const result = await hf.summarization({
-      model: "facebook/bart-large-cnn",
-      inputs: content.slice(0, 1024),
-      parameters: {
-        max_length: 60,
-        min_length: 30
-      }
-    });
-    return result.summary_text;
-  } catch (err) {
-    console.error("Summarization failed:", err);
-    return null;
-  }
-}
-
-async function getAiEmbedding(content: string): Promise<number[] | null> {
-  try {
-    const result = await hf.featureExtraction({
-      model: "sentence-transformers/all-mpnet-base-v2",
-      inputs: content
-    });
-    
-    const arr = result as unknown as (number | number[])[];
-    if (Array.isArray(arr)) {
-      if (typeof arr[0] === 'number') return arr as number[];
-      if (Array.isArray(arr[0])) return arr[0] as number[];
-    }
-  } catch (err) {
-    console.error("Embedding failed:", err);
-  }
-  return null;
-}
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
@@ -147,23 +92,26 @@ export async function POST(req: Request) {
       context_after, 
       user_note, 
       source_url, 
-      page_title 
+      page_title,
+      project_id // New optional project_id
     } = body;
 
     if (!content) {
       return NextResponse.json({ error: "Content is required" }, { status: 400, headers: corsHeaders });
     }
 
-    let dbUser = await prisma.user.findUnique({ where: { email: user.email! } })
-    
-    if (!dbUser) {
-      dbUser = await prisma.user.create({
-        data: {
-          email: user.email!,
-          name: user.user_metadata?.name || user.email?.split('@')[0],
-        }
-      })
-    }
+    // Use upsert to handle race conditions where multiple requests try to create the same user
+    let dbUser = await prisma.user.upsert({
+      where: { email: user.email! },
+      update: {},
+      create: {
+        email: user.email!,
+        name: user.user_metadata?.name || user.email?.split('@')[0],
+      }
+    });
+
+    // Get or Create Personal Workspace
+    const personalWorkspace = await getOrCreatePersonalWorkspace(dbUser.id, dbUser.name || "User");
 
     if (dbUser.subscriptionTier === "free") {
       const startOfMonth = new Date();
@@ -187,30 +135,38 @@ export async function POST(req: Request) {
 
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
-    let finalNote = user_note;
+    let finalNote = user_note || "";
 
     try {
-      const tasks: any[] = [
-        getAiTags(content),
-        getAiEmbedding(content)
-      ];
+      // Use allSettled to be resilient to partial AI failures (e.g. rate limits)
+      const results = await Promise.allSettled([
+        getOpenRouterTags(content),
+        getOpenRouterEmbedding(content),
+        getOpenRouterSummary(content)
+      ]);
       
-      // If user note is empty, generate AI summary
-      if (!user_note || user_note.trim() === "") {
-        tasks.push(getAiSummary(content));
+      if (results[0].status === "fulfilled") tags = results[0].value;
+      if (results[1].status === "fulfilled" && results[1].value) {
+        embedding = results[1].value;
+      } else {
+        console.warn("Embedding generation failed or returned null");
+        aiStatus = "partial";
       }
 
-      const [aiTags, aiEmbedding, aiSummary] = await Promise.all(tasks);
-      
-      tags = aiTags;
-      embedding = aiEmbedding;
-      if (aiSummary) {
-        finalNote = `AI Summary: ${aiSummary}`;
+      if (results[2].status === "fulfilled" && results[2].value) {
+        const aiSummary = results[2].value;
+        const aiPart = `AI Insight: ${aiSummary}`;
+        finalNote = user_note && user_note.trim() !== "" 
+          ? `${user_note}\n\n${aiPart}`
+          : aiPart;
       }
-      
-      if (!embedding) aiStatus = "partial";
+
+      if (results.some(r => r.status === "rejected")) {
+        console.warn("Some AI tasks rejected");
+        aiStatus = "partial";
+      }
     } catch (aiErr) {
-      console.error("AI Pipeline failed entirely");
+      console.error("Critical AI Pipeline error:", aiErr);
       aiStatus = "failed";
     }
 
@@ -222,11 +178,11 @@ export async function POST(req: Request) {
           await prisma.$executeRaw`
             INSERT INTO insights (
               id, content, "contextBefore", "contextAfter", "userNote", 
-              "sourceUrl", "pageTitle", tags, "userId", "createdAt", "updatedAt",
+              "sourceUrl", "pageTitle", tags, "userId", "workspaceId", "projectId", "createdAt", "updatedAt",
               embedding
             ) VALUES (
               ${insightId}, ${content}, ${context_before}, ${context_after}, ${finalNote},
-              ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, NOW(), NOW(),
+              ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, ${personalWorkspace.id}, ${project_id || null}, NOW(), NOW(),
               CAST(${embedding}::float8[] AS vector)
             )
           `;
@@ -248,7 +204,9 @@ export async function POST(req: Request) {
             sourceUrl: source_url,
             pageTitle: page_title,
             tags,
-            userId: dbUser.id
+            userId: dbUser.id,
+            workspaceId: personalWorkspace.id,
+            projectId: project_id || null
           }
         });
       }

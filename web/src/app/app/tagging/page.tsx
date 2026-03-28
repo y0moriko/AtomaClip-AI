@@ -50,7 +50,7 @@ export default function TaggingInfo() {
             ACTIVE FEATURE
           </div>
           <p className="text-[10px] text-muted-foreground mt-4 uppercase tracking-widest">
-            Powered by facebook/bart-large-mnli
+            Powered by Gemini 1.5 Flash via OpenRouter
           </p>
         </div>
       </SidebarInset>

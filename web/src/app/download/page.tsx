@@ -85,14 +85,14 @@ export default function DownloadPage() {
                           <span className="w-7 h-7 rounded-lg bg-indigo-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform">2</span>
                           <div className="space-y-1">
                             <p className="font-bold text-foreground">Open Extensions</p>
-                            <p className="text-muted-foreground text-[13px] leading-relaxed">Type <code className="bg-muted px-1.5 py-0.5 rounded text-indigo-600 font-mono text-[11px]">chrome://extensions</code> in your URL bar.</p>
+                            <p className="text-muted-foreground text-[13px] leading-relaxed">Type <code className="bg-muted px-1.5 py-0.5 rounded text-indigo-600 font-mono text-[11px]">brave://extensions</code> (or <code className="bg-muted px-1.5 py-0.5 rounded text-indigo-600 font-mono text-[11px]">edge://extensions</code> for Edge) in your URL bar.</p>
                           </div>
                         </li>
                         <li className="flex gap-4 items-start group">
                           <span className="w-7 h-7 rounded-lg bg-indigo-500 text-white flex items-center justify-center text-xs font-bold shrink-0 shadow-md shadow-indigo-500/20 group-hover:scale-110 transition-transform">3</span>
                           <div className="space-y-1">
                             <p className="font-bold text-foreground">Developer Mode</p>
-                            <p className="text-muted-foreground text-[13px] leading-relaxed">Toggle the switch in the top-right corner of Chrome.</p>
+                            <p className="text-muted-foreground text-[13px] leading-relaxed">Toggle the switch in the top-right corner to enable developer mode.</p>
                           </div>
                         </li>
                         <li className="flex gap-4 items-start group">
