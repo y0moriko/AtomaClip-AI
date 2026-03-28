@@ -47,24 +47,44 @@ export default function LandingPage() {
             <Sparkles className="w-3 h-3 mr-2" />
             For High-Velocity Researchers
           </Badge>
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            Your Second Brain, <br />
-            <span className="text-indigo-600">Automated.</span>
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
+            Stop Bookmarking. <br />
+            <span className="text-indigo-600">Start Clipping.</span>
           </h1>
-          <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-            AtomaClip captures web content, auto-tags it with AI, and builds your searchable knowledge base instantly.
+          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            A lightweight Chrome extension to capture specific web insights. 
+            Search your library by <span className="text-foreground font-semibold underline decoration-indigo-500/30">meaning</span>, not just keywords.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button size="lg" className="px-8">
-                Start Free
-                <ArrowRight className="ml-2 w-4 h-4" />
+              <Button size="lg" className="px-10 h-14 text-lg font-bold shadow-lg shadow-indigo-500/20 bg-indigo-600 hover:bg-indigo-700 transition-all hover:scale-105">
+                Add to Chrome — Setup in 30s
+                <Chrome className="ml-2 w-5 h-5" />
               </Button>
             </Link>
           </div>
-          <div className="mt-8 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-green-500" /> AI Auto-Tagging</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-green-500" /> Semantic Search</span>
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-left border rounded-2xl p-8 bg-muted/20">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-bold text-indigo-600">
+                <Zap className="w-4 h-4" />
+                <span>Save Atoms, Not URLs</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Capture the exact sentence or paragraph you need, not the whole page.</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-bold text-indigo-600">
+                <Brain className="w-4 h-4" />
+                <span>Ghost Paragraphs</span>
+              </div>
+              <p className="text-sm text-muted-foreground">We automatically save the context before and after every clip you make.</p>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 font-bold text-indigo-600">
+                <Search className="w-4 h-4" />
+                <span>Semantic Search</span>
+              </div>
+              <p className="text-sm text-muted-foreground">Ask questions like "What was that fact about GDP?" to find your notes instantly.</p>
+            </div>
           </div>
         </div>
       </section>
