@@ -33,6 +33,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { supabase } from "@/lib/supabase"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [workspaces, setWorkspaces] = React.useState<any[]>([])
@@ -43,6 +44,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     email: "",
     avatar: "",
   })
+
+  const loadUser = React.useCallback(async () => {
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser()
+    if (supabaseUser) {
+      setUser({
+        name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || "Researcher",
+        email: supabaseUser.email || "",
+        avatar: supabaseUser.user_metadata?.avatar_url || "",
+      })
+    }
+  }, [])
 
   const loadData = React.useCallback(async () => {
     try {
@@ -63,8 +75,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
 
   React.useEffect(() => {
+    loadUser()
     loadData()
-  }, [loadData])
+  }, [loadUser, loadData])
 
   React.useEffect(() => {
     if (activeWorkspace) {
@@ -143,9 +156,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const formattedTeams = workspaces.map(w => ({
     name: w.name,
     logo: w.type === 'personal' ? GalleryVerticalEnd : AudioWaveform,
-    plan: w.type === 'personal' ? 'Pro' : 'Enterprise',
+    plan: w.type === 'personal' ? 'Personal' : 'Team',
     id: w.id
   }))
+
+  const activeTeam = formattedTeams.find(t => t.id === activeWorkspace?.id) || formattedTeams[0] || null
+
+  const handleTeamChange = (team: any) => {
+    const workspace = workspaces.find(w => w.id === team.id)
+    if (workspace) {
+      setActiveWorkspace(workspace)
+    }
+  }
 
   const formattedProjects = projects.map(p => ({
     id: p.id,
@@ -159,8 +181,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <TeamSwitcher 
           teams={formattedTeams.length > 0 ? formattedTeams : [
-            { name: "Loading...", logo: GalleryVerticalEnd, plan: "Wait" }
+            { id: 'loading', name: "Loading...", logo: GalleryVerticalEnd, plan: "Wait" }
           ]} 
+          activeTeam={activeTeam}
+          onTeamChange={handleTeamChange}
         />
       </SidebarHeader>
       <SidebarContent>
