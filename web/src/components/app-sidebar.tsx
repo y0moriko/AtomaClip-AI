@@ -20,6 +20,8 @@ import {
   Users,
   Zap,
   MessageSquare,
+  User,
+  Settings
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -126,6 +128,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {
           title: "AI Tagging",
           url: "/app/tagging",
+        },
+      ],
+    },
+    {
+      title: "Personal",
+      url: "#",
+      icon: User,
+      items: [
+        {
+          title: "My Profile",
+          url: "/app/profile",
+        },
+        {
+          title: "Settings",
+          url: "/app/settings",
         },
       ],
     },

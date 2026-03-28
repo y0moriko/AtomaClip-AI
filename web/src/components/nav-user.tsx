@@ -116,15 +116,24 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator className="bg-indigo-50" />
             <DropdownMenuGroup className="space-y-0.5">
-              <DropdownMenuItem className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors">
+              <DropdownMenuItem 
+                className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => router.push("/app/profile")}
+              >
                 <User className="size-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Profile</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors">
+              <DropdownMenuItem 
+                className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => router.push("/app/settings?tab=billing")}
+              >
                 <CreditCard className="size-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Billing</span>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors">
+              <DropdownMenuItem 
+                className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => router.push("/app/settings")}
+              >
                 <Settings className="size-4 text-muted-foreground" />
                 <span className="text-sm font-medium">Settings</span>
               </DropdownMenuItem>
