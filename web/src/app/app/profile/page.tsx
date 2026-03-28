@@ -15,7 +15,8 @@ import {
   Settings,
   Share2,
   Trophy,
-  Zap
+  Zap,
+  Sparkles
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
