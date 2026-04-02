@@ -27,6 +27,7 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
+import { NavSecondary } from "@/components/nav-secondary"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
@@ -92,29 +93,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navMain = [
     {
-      title: "Workspace",
-      url: "/app",
-      icon: LayoutDashboard,
-      isActive: true,
-      items: [
-        {
-          title: "All Atoms",
-          url: "/app",
-        },
-        {
-          title: "Recent",
-          url: "/app",
-        },
-        {
-          title: "Starred",
-          url: "/app",
-        },
-      ],
-    },
-    {
       title: "Research Tools",
       url: "#",
       icon: Bot,
+      isActive: true,
       items: [
         {
           title: "Semantic Search",
@@ -132,41 +114,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       ],
     },
     {
-      title: "Personal",
-      url: "#",
-      icon: User,
+      title: "Library",
+      url: "/app",
+      icon: Library,
       items: [
         {
-          title: "My Profile",
-          url: "/app/profile",
+          title: "All Atoms",
+          url: "/app",
         },
         {
-          title: "Settings",
-          url: "/app/settings",
+          title: "Starred",
+          url: "/app",
+        },
+        {
+          title: "Recent",
+          url: "/app",
         },
       ],
     },
+  ]
+
+  const navSecondary = [
     {
-      title: "Extension",
+      title: "Download Extension",
       url: "/download",
       icon: Download,
-      items: [
-        {
-          title: "Download",
-          url: "/download",
-        },
-      ],
     },
     {
-      title: "Support",
-      url: "#",
+      title: "Share Feedback",
+      url: "https://docs.google.com/forms/d/e/1FAIpQLSePg5VszEZk61sPFBQeXNoNNyddD49sdmpqOVq09-y-Q9rsQQ/viewform?usp=sf_link",
       icon: MessageSquare,
-      items: [
-        {
-          title: "Share Feedback",
-          url: "https://docs.google.com/forms/d/e/1FAIpQLSePg5VszEZk61sPFBQeXNoNNyddD49sdmpqOVq09-y-Q9rsQQ/viewform?usp=sf_link",
-        },
-      ],
     },
   ]
 
@@ -213,6 +190,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         />
       </SidebarContent>
       <SidebarFooter>
+        <NavSecondary items={navSecondary} className="mt-auto" />
         <NavUser user={user} />
       </SidebarFooter>
       <SidebarRail />
