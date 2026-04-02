@@ -53,6 +53,8 @@ async function apiRequest(endpoint, method = "GET", body = null) {
     });
   });
 }
+
+function getGhostParagraphs() {
   const selection = window.getSelection();
   if (selection.rangeCount === 0) return { before: "", after: "" };
   const range = selection.getRangeAt(0);
