@@ -99,3 +99,59 @@ To support the transition to a paid product, we will implement these high-impact
 ## 4. Market Suggestions
 *   **Early Bird Offer:** A "Lifetime Deal" (LTD) for the first 100 users for a flat fee (e.g., $49). This builds a seed community and provides immediate cash flow for API costs.
 *   **Affiliate Program:** Target academic influencers on Twitter/LinkedIn.
+
+---
+
+## 5. Implementation Notes
+
+### Environment Variables Required
+
+After deploying, add these to **Render Environment Variables**:
+
+| Variable | Where to Get | Purpose |
+|---------|-------------|---------|
+| `RESEND_API_KEY` | [resend.com](https://resend.com) → API Keys → Create | Email sending (free tier: 100/day) |
+| `CRON_SECRET` | Generate yourself (`openssl rand -base64 32`) | Secures the weekly digest cron endpoint |
+| `NEXT_PUBLIC_APP_URL` | Your deployed app URL (e.g., `https://atomaclip-ai.onrender.com`) | Used in email links |
+
+### After Code Deploy / Database Schema Changes
+
+```bash
+# Navigate to web folder
+cd web
+
+# Push schema changes to database (adds new columns)
+npx prisma db push
+
+# Or for production migration
+npx prisma migrate deploy
+```
+
+### Weekly Digest Cron Setup
+
+To send weekly digest emails, set up a cron job that calls:
+```
+POST https://your-domain.com/api/digest/weekly
+Authorization: Bearer <CRON_SECRET>
+```
+
+Options:
+- **Render**: Add a cron job in your Render dashboard
+- **External**: Use services like EasyCron, cron-job.org, or GitHub Actions
+
+### Features Implemented (as of latest commit)
+
+- ✅ Real usage tracking (Settings page shows actual clip count)
+- ✅ Subscription tier display (free/pro badge)
+- ✅ Profile page with real data from database
+- ✅ PDF Clipping (auto-detects arXiv, ResearchGate, JSTOR, Google Docs PDF viewer, etc.)
+- ✅ PDF-specific popup with text preview
+- ✅ Conversation chat in Projects (with conversation history)
+- ✅ Weekly digest email template
+- ✅ Email preferences toggle in Settings
+
+### Features Pending
+
+- ⏳ Stripe/Xendit payment integration
+- ⏳ Upgrade prompt modal at 20 clips
+- ⏳ Extension usage display (X/20 clips in popup)
