@@ -218,7 +218,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </header>
         
         <div className="flex flex-1 overflow-hidden">
-          <div className={`flex-1 flex flex-col ${showSidebar ? 'border-r' : ''}`}>
+          <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-start justify-between p-4 pb-0">
               <div>
                 <h1 className="text-2xl font-bold tracking-tight">{project.name}</h1>
@@ -244,7 +244,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 </p>
               </div>
             ) : (
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {project.insights?.map((insight: any) => (
                     <InsightCard 
@@ -264,7 +264,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
 
           {showSidebar && (
-            <div className="w-full max-w-md flex flex-col bg-gradient-to-b from-indigo-50/30 to-white">
+            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l">
               <div className="flex items-center gap-2 p-4 border-b bg-indigo-600/5">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-white" />
@@ -284,9 +284,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 overflow-y-auto p-4" ref={chatContainerRef}>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatContainerRef}>
                     {messages.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-full text-center">
+                      <div className="flex flex-col items-center justify-center h-full text-center pt-12">
                         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
                           <Sparkles className="w-6 h-6 text-indigo-600" />
                         </div>
@@ -309,7 +309,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4 pb-4">
+                      <div>
                         {messages.map((message) => (
                           <div
                             key={message.id}
