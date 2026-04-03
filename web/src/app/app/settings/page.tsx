@@ -16,7 +16,9 @@ import {
   HelpCircle,
   LogOut,
   Slack,
-  Layers
+  Layers,
+  Crown,
+  Infinity as InfinityIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
@@ -27,9 +29,39 @@ import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+interface UsageStats {
+  subscriptionTier: string
+  atomsUsed: number
+  limit: number
+  isUnlimited: boolean
+  daysUntilReset: number
+}
+
 export default function SettingsPage() {
-  const [atomsUsed, setAtomsUsed] = React.useState(14)
-  const [totalLimit, setTotalLimit] = React.useState(20)
+  const [usageStats, setUsageStats] = React.useState<UsageStats | null>(null)
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    async function fetchUsageStats() {
+      try {
+        const response = await fetch('/api/usage/stats')
+        if (response.ok) {
+          const data = await response.json()
+          setUsageStats(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch usage stats:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchUsageStats()
+  }, [])
+
+  const isPro = usageStats?.subscriptionTier === 'pro'
+  const atomsUsed = usageStats?.atomsUsed ?? 0
+  const totalLimit = usageStats?.isUnlimited ? 9999 : (usageStats?.limit ?? 20)
+  const progress = usageStats?.isUnlimited ? 100 : ((atomsUsed / totalLimit) * 100)
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-5xl mx-auto">
@@ -59,32 +91,64 @@ export default function SettingsPage() {
         <TabsContent value="account" className="space-y-6">
           <Card className="border-indigo-50/50 shadow-sm">
             <CardHeader>
-              <CardTitle>Usage Tracker</CardTitle>
-              <CardDescription>You are currently on the <strong>Scout (Free)</strong> plan.</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                Usage Tracker
+                {isPro && (
+                  <Badge variant="secondary" className="bg-amber-100 text-amber-700 gap-1">
+                    <Crown className="w-3 h-3" /> Scholar Pro
+                  </Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                You are currently on the <strong>{isPro ? 'Scholar (Pro)' : 'Scout (Free)'}</strong> plan.
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span className="font-medium">Monthly Atoms Used</span>
-                  <span className="text-muted-foreground">{atomsUsed} / {totalLimit} clips</span>
+                  <span className="text-muted-foreground">
+                    {loading ? '...' : (
+                      usageStats?.isUnlimited ? (
+                        <span className="flex items-center gap-1 text-green-600">
+                          <InfinityIcon className="w-4 h-4" /> Unlimited
+                        </span>
+                      ) : (
+                        `${atomsUsed} / ${totalLimit} clips`
+                      )
+                    )}
+                  </span>
                 </div>
-                <Progress value={(atomsUsed / totalLimit) * 100} className="h-3 bg-indigo-50" />
-                <p className="text-xs text-muted-foreground mt-2">
-                  Your limit resets in 12 days.
-                </p>
+                <Progress 
+                  value={loading ? 0 : progress} 
+                  className={`h-3 ${isPro ? 'bg-green-100' : 'bg-indigo-50'}`} 
+                />
+                {loading ? (
+                  <p className="text-xs text-muted-foreground mt-2">Loading...</p>
+                ) : usageStats?.isUnlimited ? (
+                  <p className="text-xs text-green-600 mt-2">
+                    Enjoy unlimited atomic clips!
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Your limit resets in {usageStats?.daysUntilReset} days.
+                  </p>
+                )}
               </div>
             </CardContent>
-            <CardFooter className="bg-indigo-50/30 border-t border-indigo-50 p-4">
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-indigo-600 fill-indigo-600" />
-                  <span className="text-sm font-bold text-indigo-900">Upgrade to Scholar Pro</span>
+            {!isPro && (
+              <CardFooter className="bg-indigo-50/30 border-t border-indigo-50 p-4">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-indigo-600 fill-indigo-600" />
+                    <span className="text-sm font-bold text-indigo-900">Upgrade to Scholar Pro</span>
+                  </div>
+                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 font-bold">
+                    Get Unlimited Atoms
+                  </Button>
                 </div>
-                <Button size="sm" className="bg-indigo-600 hover:bg-indigo-700 font-bold">
-                  Get Unlimited Atoms
-                </Button>
-              </div>
-            </CardFooter>
+              </CardFooter>
+            )}
           </Card>
 
           <Card className="border-slate-100">
@@ -182,36 +246,84 @@ export default function SettingsPage() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">
-          <Card className="border-indigo-100 bg-indigo-50/10">
+          {isPro ? (
+            <Card className="border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-amber-600" />
+                  Current Plan: Scholar Pro
+                </CardTitle>
+                <CardDescription>You're supporting the future of research.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-slate-900">₱199</span>
+                    <span className="text-muted-foreground">/ month</span>
+                  </div>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" /> Unlimited Atomic Clips
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" /> PDF Clipping Support
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" /> Semantic Search
+                    </li>
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" /> Priority AI Processing
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="border-indigo-100 bg-indigo-50/10">
+              <CardHeader>
+                <CardTitle>Current Plan: Scout</CardTitle>
+                <CardDescription>The essential toolkit for individual researchers.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-extrabold text-slate-900">₱0</span>
+                    <span className="text-muted-foreground">/ month</span>
+                  </div>
+                  <ul className="space-y-2">
+                    <li className="flex items-center gap-2 text-sm">
+                      <CheckCircle2 className="w-4 h-4 text-green-500" /> 20 Atomic Clips per month
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-muted-foreground/30" /> PDF Clipping Support (Pro)
+                    </li>
+                    <li className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <CheckCircle2 className="w-4 h-4 text-muted-foreground/30" /> Semantic Search (Pro)
+                    </li>
+                  </ul>
+                </div>
+              </CardContent>
+              <CardFooter className="border-t border-indigo-100 pt-6">
+                <Button className="w-full bg-indigo-600 hover:bg-indigo-700 font-bold">
+                  Upgrade to Scholar Pro - ₱199/month
+                </Button>
+              </CardFooter>
+            </Card>
+          )}
+
+          <Card className="border-slate-100">
             <CardHeader>
-              <CardTitle>Current Plan: Scout</CardTitle>
-              <CardDescription>The essential toolkit for individual researchers.</CardDescription>
+              <CardTitle className="text-base">Payment Methods</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">₱0</span>
-                  <span className="text-muted-foreground">/ month</span>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-green-500" /> 20 Atomic Clips per month
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-muted-foreground/30" /> PDF Clipping Support (Pro)
-                  </li>
-                </ul>
+              <div className="flex gap-4">
+                <span className="font-bold text-xl italic text-blue-600">GCash</span>
+                <span className="font-bold text-xl italic text-green-600">Maya</span>
               </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Powered by Xendit for seamless Philippine payments.
+              </p>
             </CardContent>
-            <CardFooter className="border-t border-indigo-100 pt-6">
-              <div className="grid gap-2 w-full">
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Preferred PH Payments</p>
-                <div className="flex gap-4 grayscale opacity-50">
-                  <span className="font-bold text-xl italic text-blue-600">GCash</span>
-                  <span className="font-bold text-xl italic text-green-600">Maya</span>
-                </div>
-              </div>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

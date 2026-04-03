@@ -62,9 +62,24 @@ const SAMPLE_CLIPS = [
 
 export default function DashboardPage() {
   const [insights, setInsights] = React.useState<any[]>([])
+  const [sparks, setSparks] = React.useState<any[]>([])
   const [loading, setLoading] = React.useState(true)
+  const [sparksLoading, setSparksLoading] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
   const [view, setView] = React.useState("all") // 'all', 'recent', 'starred'
+
+  const fetchSparks = async () => {
+    setSparksLoading(true)
+    try {
+      const res = await fetch("/api/insights/spark")
+      const data = await res.json()
+      setSparks(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error("Failed to fetch sparks", err)
+    } finally {
+      setSparksLoading(false)
+    }
+  }
 
   const fetchInsights = async (query = "", currentView = view) => {
     setLoading(true)
