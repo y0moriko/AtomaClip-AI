@@ -95,6 +95,33 @@ export async function GET() {
       }
     });
 
+    const totalCount = await prisma.insight.count({
+      where: { userId: user.id }
+    });
+
+    const allInsights = await prisma.insight.findMany({
+      where: { userId: user.id },
+      select: { tags: true }
+    });
+
+    const tagCounts: Record<string, number> = {};
+    allInsights.forEach(insight => {
+      insight.tags.forEach(tag => {
+        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+      });
+    });
+
+    const topTags = Object.entries(tagCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([name, count]) => ({ name, count }));
+
+    const totalTagUsage = Object.values(tagCounts).reduce((sum, count) => sum + count, 0);
+    const tagDistribution = topTags.map(tag => ({
+      name: tag.name,
+      percentage: totalTagUsage > 0 ? Math.round((tag.count / totalTagUsage) * 100) : 0
+    }));
+
     const daysUntilReset = new Date(endOfMonth).getDate() - new Date().getDate();
     const limits = {
       free: 20,
@@ -106,9 +133,12 @@ export async function GET() {
     return NextResponse.json({
       subscriptionTier: dbUser.subscriptionTier,
       atomsUsed: monthlyCount,
+      totalCount,
       limit: currentLimit,
       isUnlimited: currentLimit === Infinity,
       daysUntilReset,
+      topTags,
+      tagDistribution,
       startOfMonth: startOfMonth.toISOString(),
       endOfMonth: endOfMonth.toISOString()
     }, { headers: corsHeaders });

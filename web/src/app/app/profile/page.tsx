@@ -16,8 +16,11 @@ import {
   Share2,
   Trophy,
   Zap,
-  Sparkles
+  Sparkles,
+  ArrowLeft,
+  Home
 } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -27,56 +30,108 @@ import { Switch } from "@/components/ui/switch"
 import { Progress } from "@/components/ui/progress"
 import { supabase } from "@/lib/supabase"
 
+interface ProfileStats {
+  totalAtoms: number
+  monthlyAtoms: number
+  hoursSaved: number
+  researchStreak: number
+  level: number
+  topTags: { name: string; count: number }[]
+  tagDistribution: { name: string; percentage: number }[]
+}
+
 export default function ProfilePage() {
   const [user, setUser] = React.useState<any>(null)
-  const [stats, setStats] = React.useState({
-    totalAtoms: 1240,
-    hoursSaved: 20.5,
-    researchStreak: 12,
-    level: 4
+  const [loading, setLoading] = React.useState(true)
+  const [stats, setStats] = React.useState<ProfileStats>({
+    totalAtoms: 0,
+    monthlyAtoms: 0,
+    hoursSaved: 0,
+    researchStreak: 0,
+    level: 1,
+    topTags: [],
+    tagDistribution: []
   })
 
   React.useEffect(() => {
-    const loadUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setUser({
-          name: user.user_metadata?.full_name || user.email?.split('@')[0],
-          email: user.email,
-          avatar: user.user_metadata?.avatar_url,
-        })
+    const loadData = async () => {
+      try {
+        const { data: { user: supaUser } } = await supabase.auth.getUser()
+        if (supaUser) {
+          setUser({
+            name: supaUser.user_metadata?.full_name || supaUser.email?.split('@')[0],
+            email: supaUser.email,
+            avatar: supaUser.user_metadata?.avatar_url,
+          })
+          
+          const response = await fetch('/api/usage/stats')
+          if (response.ok) {
+            const usage = await response.json()
+            
+            const totalAtoms = usage.totalCount || 0
+            const monthlyAtoms = usage.atomsUsed || 0
+            const hoursSaved = (monthlyAtoms * 0.25).toFixed(1)
+            const level = Math.floor(totalAtoms / 50) + 1
+            
+            setStats({
+              totalAtoms,
+              monthlyAtoms,
+              hoursSaved: parseFloat(hoursSaved),
+              researchStreak: Math.min(level, 7),
+              level,
+              topTags: usage.topTags || [],
+              tagDistribution: usage.tagDistribution || []
+            })
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load profile data:', error)
+      } finally {
+        setLoading(false)
       }
     }
-    loadUser()
+    loadData()
   }, [])
 
-  if (!user) return null
+  if (!user && !loading) return null
 
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20 border-2 border-indigo-100 shadow-sm">
-            <AvatarImage src={user.avatar} />
-            <AvatarFallback className="text-xl bg-indigo-50 text-indigo-700">
-              {user.name?.[0]?.toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-            <div className="flex gap-2 mt-2">
-              <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100">
-                Level {stats.level} Researcher
-              </Badge>
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Zap className="w-3 h-3 fill-orange-500 text-orange-500" />
-                {stats.researchStreak} Day Streak
-              </Badge>
+        <div className="flex items-center gap-3">
+          <Link href="/app">
+            <Button variant="ghost" size="icon" className="h-9 w-9 border border-border/50 hover:bg-muted">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20 border-2 border-indigo-100 shadow-sm">
+              <AvatarImage src={user?.avatar} />
+              <AvatarFallback className="text-xl bg-indigo-50 text-indigo-700">
+                {user?.name?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{user?.name}</h1>
+              <p className="text-muted-foreground">{user?.email}</p>
+              <div className="flex gap-2 mt-2">
+                <Badge variant="secondary" className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-100">
+                  Level {stats.level} Researcher
+                </Badge>
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Zap className="w-3 h-3 fill-orange-500 text-orange-500" />
+                  {stats.researchStreak} Day Streak
+                </Badge>
+              </div>
             </div>
           </div>
         </div>
         <div className="flex gap-2">
+          <Link href="/app">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Home className="w-4 h-4" /> Dashboard
+            </Button>
+          </Link>
           <Button variant="outline" size="sm" className="gap-2">
             <Share2 className="w-4 h-4" /> Share Portfolio
           </Button>
@@ -94,7 +149,7 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalAtoms.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">+140 this month</p>
+            <p className="text-xs text-muted-foreground mt-1">+{stats.monthlyAtoms} this month</p>
           </CardContent>
         </Card>
         <Card className="border-indigo-50/50 shadow-sm">
@@ -113,22 +168,27 @@ export default function ProfilePage() {
             <Target className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">AI Ethics</span>
-                  <span className="text-muted-foreground">40%</span>
-                </div>
-                <Progress value={40} className="h-1.5 bg-indigo-50" />
+            {loading ? (
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div key={i} className="h-4 bg-muted/50 rounded animate-pulse" />
+                ))}
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium">Economic Growth</span>
-                  <span className="text-muted-foreground">30%</span>
-                </div>
-                <Progress value={30} className="h-1.5 bg-emerald-50" />
+            ) : stats.tagDistribution.length > 0 ? (
+              <div className="space-y-3">
+                {stats.tagDistribution.slice(0, 3).map((tag, i) => (
+                  <div key={tag.name} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium">{tag.name}</span>
+                      <span className="text-muted-foreground">{tag.percentage}%</span>
+                    </div>
+                    <Progress value={tag.percentage} className={`h-1.5 ${i === 0 ? 'bg-indigo-50' : 'bg-emerald-50'}`} />
+                  </div>
+                ))}
               </div>
-            </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">Start saving atoms to see your knowledge distribution!</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -180,11 +240,21 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {["Machine Learning", "Quantum Computing", "Deep Learning", "Ethical AI", "Sustainability", "GDP Analysis", "Philosophy"].map((tag) => (
-                <Badge key={tag} variant="secondary" className="px-3 py-1 bg-white border border-indigo-100 text-indigo-700 hover:bg-indigo-50 cursor-default">
-                  {tag}
-                </Badge>
-              ))}
+              {loading ? (
+                <>
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-6 w-20 bg-muted/50 rounded-full animate-pulse" />
+                  ))}
+                </>
+              ) : stats.topTags.length > 0 ? (
+                stats.topTags.map((tag) => (
+                  <Badge key={tag.name} variant="secondary" className="px-3 py-1 bg-white border border-indigo-100 text-indigo-700 hover:bg-indigo-50 cursor-default">
+                    {tag.name} ({tag.count})
+                  </Badge>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No tags yet. Start saving atoms!</p>
+              )}
             </div>
             <div className="mt-8 p-6 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl text-white relative overflow-hidden">
               <div className="relative z-10">

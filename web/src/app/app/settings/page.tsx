@@ -18,8 +18,11 @@ import {
   Slack,
   Layers,
   Crown,
-  Infinity as InfinityIcon
+  Infinity as InfinityIcon,
+  ArrowLeft,
+  Home
 } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -66,10 +69,23 @@ export default function SettingsPage() {
   return (
     <div className="flex-1 space-y-8 p-8 pt-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">Manage your account, preferences, and integrations.</p>
+        <div className="flex items-center gap-3">
+          <Link href="/app">
+            <Button variant="ghost" size="icon" className="h-9 w-9 border border-border/50 hover:bg-muted">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
+            <p className="text-muted-foreground">Manage your account, preferences, and integrations.</p>
+          </div>
         </div>
+        <Link href="/app">
+          <Button variant="outline" size="sm" className="gap-2 text-xs h-8">
+            <Home className="w-3 h-3" />
+            Back to Dashboard
+          </Button>
+        </Link>
       </div>
 
       <Tabs defaultValue="account" className="space-y-6">
