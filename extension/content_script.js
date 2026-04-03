@@ -123,11 +123,15 @@ function showWhyPopup(data) {
   const aiState = popup.querySelector("#atomaclip-ai-state");
   input.focus();
 
-  // Load projects
+  // Load projects for regular web capture
   (async () => {
     try {
+      console.log("AtomaClip: Loading workspaces...");
       const response = await apiRequest("/api/workspaces");
-      if (response.success) {
+      console.log("AtomaClip: Workspaces response:", response);
+      
+      if (response.success && response.data && response.data.length > 0) {
+        let projectCount = 0;
         response.data.forEach(ws => {
           const group = document.createElement("optgroup");
           group.label = ws.name;
@@ -136,19 +140,23 @@ function showWhyPopup(data) {
             opt.value = p.id;
             opt.textContent = p.name;
             group.appendChild(opt);
+            projectCount++;
           });
           if (ws.projects.length > 0) {
             projectSelect.appendChild(group);
           }
         });
+        console.log(`AtomaClip: Loaded ${projectCount} projects`);
+      } else {
+        console.log("AtomaClip: No projects found or empty response", response);
       }
     } catch (err) {
-      console.error("Failed to load projects in popup", err);
+      console.error("AtomaClip: Failed to load projects", err);
     }
   })();
 
   async function finishCapture() {
-    console.log("finishCapture called");
+    console.log("finishCapture called (web)");
     const userNote = input.value;
     const projectId = projectSelect.value;
     
@@ -288,11 +296,15 @@ function showPDFCapturePopup(data) {
   const aiState = popup.querySelector("#atomaclip-ai-state");
   input.focus();
 
-  // Load projects
+  // Load projects for PDF capture
   (async () => {
     try {
+      console.log("AtomaClip: Loading workspaces for PDF...");
       const response = await apiRequest("/api/workspaces");
-      if (response.success) {
+      console.log("AtomaClip: Workspaces response:", response);
+      
+      if (response.success && response.data && response.data.length > 0) {
+        let projectCount = 0;
         response.data.forEach(ws => {
           const group = document.createElement("optgroup");
           group.label = ws.name;
@@ -301,14 +313,18 @@ function showPDFCapturePopup(data) {
             opt.value = p.id;
             opt.textContent = p.name;
             group.appendChild(opt);
+            projectCount++;
           });
           if (ws.projects.length > 0) {
             projectSelect.appendChild(group);
           }
         });
+        console.log(`AtomaClip: Loaded ${projectCount} projects`);
+      } else {
+        console.log("AtomaClip: No projects found or empty response", response);
       }
     } catch (err) {
-      console.error("Failed to load projects in popup", err);
+      console.error("AtomaClip: Failed to load projects", err);
     }
   })();
 
