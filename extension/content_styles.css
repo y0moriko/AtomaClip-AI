@@ -38,6 +38,10 @@
   text-transform: uppercase;
 }
 
+.atomaclip-brand-pdf {
+  color: #f59e0b;
+}
+
 .atomaclip-field {
   margin-bottom: 20px;
 }
@@ -131,6 +135,14 @@
   cursor: not-allowed;
 }
 
+.atomaclip-save-btn-pdf {
+  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+}
+
+.atomaclip-save-btn-pdf:hover {
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
 .atomaclip-footer {
   display: flex;
   align-items: center;
@@ -149,12 +161,21 @@
   gap: 4px;
 }
 
+.atomaclip-ai-badge-pdf {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
 .atomaclip-shimmer {
   width: 8px;
   height: 8px;
   background: #818cf8;
   border-radius: 50%;
   animation: atomaclip-pulse 1.5s infinite;
+}
+
+.atomaclip-shimmer-pdf {
+  background: #fbbf24;
 }
 
 @keyframes atomaclip-pulse {
@@ -170,4 +191,52 @@
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.atomaclip-pdf-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.atomaclip-pdf-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.atomaclip-preview {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+  max-height: 120px;
+  overflow-y: auto;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.atomaclip-preview strong {
+  color: white;
+}
+
+.atomaclip-context {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.atomaclip-context span {
+  color: #94a3b8;
 }

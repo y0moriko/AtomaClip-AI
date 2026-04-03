@@ -90,4 +90,41 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     })();
     return true;
   }
+
+  if (request.action === "CAPTURE_FROM_PDF") {
+    console.log("CAPTURE_FROM_PDF received:", request.data);
+    (async () => {
+      try {
+        const token = await getAuthToken();
+        
+        if (!token) {
+          sendResponse({ success: false, error: "Please login first" });
+          return;
+        }
+
+        const headers = { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        };
+
+        const response = await fetch(`${PRODUCTION_URL}/api/insights/capture`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify(request.data)
+        });
+
+        const data = await response.json().catch(() => ({}));
+        
+        if (response.ok) {
+          sendResponse({ success: true, data });
+        } else {
+          sendResponse({ success: false, error: data.error || "Capture failed" });
+        }
+      } catch (err) {
+        console.error("PDF capture error:", err);
+        sendResponse({ success: false, error: err.message });
+      }
+    })();
+    return true;
+  }
 });

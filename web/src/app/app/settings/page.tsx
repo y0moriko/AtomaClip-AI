@@ -20,7 +20,8 @@ import {
   Crown,
   Infinity as InfinityIcon,
   ArrowLeft,
-  Home
+  Home,
+  Mail
 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -259,6 +260,40 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="border-slate-100">
+            <CardHeader className="flex flex-row items-center gap-4 pb-2">
+              <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
+                <Mail className="w-6 h-6 text-indigo-600" />
+              </div>
+              <div>
+                <CardTitle className="text-base font-bold">Email Notifications</CardTitle>
+                <CardDescription>Manage your digest and notification emails.</CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-sm font-semibold">Weekly Research Digest</p>
+                  <p className="text-xs text-muted-foreground">Get a summary of your weekly captures every Sunday.</p>
+                </div>
+                <Switch 
+                  defaultChecked 
+                  onCheckedChange={async (checked) => {
+                    try {
+                      await fetch('/api/preferences', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ emailDigest: checked })
+                      })
+                    } catch (err) {
+                      console.error('Failed to update preference:', err)
+                    }
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-6">
