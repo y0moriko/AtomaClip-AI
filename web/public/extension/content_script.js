@@ -110,9 +110,21 @@ function showWhyPopup(data) {
   // Load projects
   (async () => {
     try {
+      console.log("AtomaClip: Requesting /api/workspaces...");
       const response = await apiRequest("/api/workspaces");
+      console.log("AtomaClip: /api/workspaces response:", response);
+      
       if (response.success) {
+        console.log("AtomaClip: Workspaces data:", response.data);
+        
+        if (!response.data || response.data.length === 0) {
+          console.warn("AtomaClip: No workspaces returned");
+          aiState.innerHTML = `<span style="color: #f59e0b; font-size: 10px;">No workspaces. Try logging in again.</span>`;
+          return;
+        }
+        
         response.data.forEach(ws => {
+          console.log("AtomaClip: Processing workspace:", ws.name, "projects:", ws.projects?.length);
           const group = document.createElement("optgroup");
           group.label = ws.name;
           ws.projects.forEach(p => {
@@ -125,9 +137,12 @@ function showWhyPopup(data) {
             projectSelect.appendChild(group);
           }
         });
+      } else {
+        console.error("AtomaClip: API error:", response.error);
+        aiState.innerHTML = `<span style="color: #ef4444; font-size: 10px;">${response.error}</span>`;
       }
     } catch (err) {
-      console.error("Failed to load projects in popup", err);
+      console.error("AtomaClip: Failed to load projects in popup", err);
     }
   })();
 

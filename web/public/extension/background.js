@@ -18,31 +18,42 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 async function getAuthToken() {
   return new Promise((resolve) => {
     chrome.cookies.getAll({ url: PRODUCTION_URL }, (cookies) => {
-      const tokenCookie = cookies.find(c => c.name.includes("auth-token"));
+      console.log("AtomaClip: Found cookies:", cookies.map(c => c.name));
+      
+      // Try multiple cookie name patterns for Supabase
+      const tokenCookie = cookies.find(c => 
+        c.name.includes("auth-token") || 
+        c.name.includes("sb-access") ||
+        c.name.includes("access-token")
+      );
       
       if (tokenCookie) {
+        console.log("AtomaClip: Found token cookie:", tokenCookie.name);
         let rawValue = decodeURIComponent(tokenCookie.value);
         
         if (rawValue.startsWith("base64-")) {
           try {
             rawValue = atob(rawValue.substring(7));
           } catch (e) {
-            console.error("Base64 decode failed:", e.message);
+            console.error("AtomaClip: Base64 decode failed:", e.message);
           }
         }
 
         try {
           const tokenData = JSON.parse(rawValue);
           if (tokenData.access_token) {
+            console.log("AtomaClip: Successfully extracted access_token from cookie");
             resolve(tokenData.access_token);
             return;
           }
         } catch (e) {
+          console.log("AtomaClip: Using raw token value");
           resolve(rawValue);
           return;
         }
       }
       
+      console.warn("AtomaClip: No valid token cookie found");
       resolve(null);
     });
   });

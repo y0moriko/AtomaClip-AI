@@ -81,6 +81,11 @@ model Insight {
   // Array of tags for easier querying in some cases
   tags          String[] @default([])
   
+  // Auto-citation fields
+  doi           String?
+  authors       String?
+  publicationDate String?
+  
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
