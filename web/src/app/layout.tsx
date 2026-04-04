@@ -25,8 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${serif.variable} font-sans bg-background text-foreground antialiased`}>
-        {children}
+      <body className={`${inter.variable} ${serif.variable} font-sans bg-background text-foreground antialiased h-screen overflow-hidden`}>
+        <div className="h-full">
+          {children}
+        </div>
         <Toaster position="bottom-right" richColors />
       </body>
     </html>
