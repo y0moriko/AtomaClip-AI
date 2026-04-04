@@ -264,8 +264,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
 
           {showSidebar && (
-            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l">
-              <div className="flex items-center gap-2 p-4 border-b bg-indigo-600/5">
+            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l border-indigo-100/50">
+              <div className="flex items-center gap-2 p-4 border-b border-indigo-100/50 bg-indigo-600/5">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
@@ -284,7 +284,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={chatContainerRef}>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar" ref={chatContainerRef}>
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center pt-12">
                         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
@@ -328,7 +328,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                                 "rounded-2xl px-4 py-3 text-sm max-w-[85%] leading-relaxed",
                                 message.role === 'user'
                                   ? "bg-indigo-600 text-white rounded-br-md"
-                                  : "bg-white border border-indigo-100 shadow-sm rounded-bl-md"
+                                  : "bg-white border border-indigo-100/50 shadow-sm rounded-bl-md"
                               )}
                               dangerouslySetInnerHTML={{ __html: formatMessage(message.content) }}
                             />
@@ -344,7 +344,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                             <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0">
                               <Bot className="w-3 h-3 text-white" />
                             </div>
-                            <div className="bg-white border border-indigo-100 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                            <div className="bg-white border border-indigo-100/50 rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
                               <div className="flex gap-1">
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                                 <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -357,7 +357,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                     )}
                   </div>
 
-                  <div className="p-4 border-t bg-white">
+                  <div className="p-4 border-t border-indigo-100/50 bg-white">
                     <div className="flex gap-2">
                       <Input 
                         placeholder="Ask about your research..."
