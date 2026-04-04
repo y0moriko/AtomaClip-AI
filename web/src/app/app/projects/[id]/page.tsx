@@ -284,7 +284,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar" ref={chatContainerRef}>
+                  <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar" ref={chatContainerRef}>
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center pt-12">
                         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
