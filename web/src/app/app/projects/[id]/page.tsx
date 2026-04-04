@@ -217,7 +217,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
         </header>
         
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex h-full overflow-hidden">
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-start justify-between p-4 pb-0">
               <div>
