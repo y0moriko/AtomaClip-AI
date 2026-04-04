@@ -264,7 +264,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
 
           {showSidebar && (
-            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l border-indigo-100/50 overflow-hidden">
+            <div className="w-96 flex-shrink-0 flex flex-col h-full bg-gradient-to-b from-indigo-50/30 to-white border-l border-indigo-100/50">
               <div className="flex items-center gap-2 p-4 border-b border-indigo-100/50 bg-indigo-600/5 flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-white" />
