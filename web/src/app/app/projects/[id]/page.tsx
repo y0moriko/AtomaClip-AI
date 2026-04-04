@@ -264,8 +264,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
 
           {showSidebar && (
-            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l border-indigo-100/50">
-              <div className="flex items-center gap-2 p-4 border-b border-indigo-100/50 bg-indigo-600/5">
+            <div className="w-96 flex-shrink-0 flex flex-col bg-gradient-to-b from-indigo-50/30 to-white border-l border-indigo-100/50 overflow-hidden">
+              <div className="flex items-center gap-2 p-4 border-b border-indigo-100/50 bg-indigo-600/5 flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
@@ -284,7 +284,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 </div>
               ) : (
                 <>
-                  <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 custom-scrollbar" ref={chatContainerRef}>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar" ref={chatContainerRef}>
                     {messages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-center pt-12">
                         <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mb-3">
@@ -357,7 +357,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                     )}
                   </div>
 
-                  <div className="p-4 border-t border-indigo-100/50 bg-white">
+                  <div className="p-4 border-t border-indigo-100/50 bg-white flex-shrink-0">
                     <div className="flex gap-2">
                       <Input 
                         placeholder="Ask about your research..."
