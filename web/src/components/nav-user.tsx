@@ -101,9 +101,9 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-all duration-200"
             >
-              <Avatar className="h-8 w-8 rounded-lg ring-2 ring-indigo-500/10 shadow-sm">
+              <Avatar className="h-8 w-8 rounded-lg ring-2 ring-purple-500/10 shadow-sm">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-indigo-50 text-indigo-700 font-semibold text-xs">
+                <AvatarFallback className="rounded-lg bg-purple-50 text-purple-700 font-semibold text-xs">
                   {userInitials || "AR"}
                 </AvatarFallback>
               </Avatar>
@@ -115,16 +115,16 @@ export function NavUser({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-xl border-indigo-100 shadow-2xl p-1.5"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-64 rounded-xl border-purple-100 shadow-2xl p-1.5"
             side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={8}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-3 px-2 py-2.5 text-left text-sm">
-                <Avatar className="h-10 w-10 rounded-lg ring-2 ring-indigo-500/10">
+                <Avatar className="h-10 w-10 rounded-lg ring-2 ring-purple-500/10">
                   <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg bg-indigo-50 text-indigo-700 font-bold">
+                  <AvatarFallback className="rounded-lg bg-purple-50 text-purple-700 font-bold">
                     {userInitials || "AR"}
                   </AvatarFallback>
                 </Avatar>
@@ -143,12 +143,12 @@ export function NavUser({
                 </div>
               )}
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-indigo-50" />
+            <DropdownMenuSeparator className="bg-purple-100" />
             {!isPro ? (
               <DropdownMenuGroup>
-                <DropdownMenuItem className="gap-3 py-2.5 px-3 rounded-lg focus:bg-indigo-600 focus:text-white group transition-all">
-                  <div className="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center group-focus:bg-white/20">
-                    <Sparkles className="size-4 text-indigo-600 group-focus:text-white" />
+                <DropdownMenuItem className="gap-3 py-2.5 px-3 rounded-lg focus:bg-purple-600 focus:text-white group transition-all">
+                  <div className="w-8 h-8 rounded-md bg-purple-50 flex items-center justify-center group-focus:bg-white/20">
+                    <Sparkles className="size-4 text-purple-600 group-focus:text-white" />
                   </div>
                   <div className="flex flex-col">
                     <span className="font-semibold">Upgrade to Pro</span>
@@ -171,7 +171,7 @@ export function NavUser({
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             )}
-            <DropdownMenuSeparator className="bg-indigo-50" />
+            <DropdownMenuSeparator className="bg-purple-100" />
             <DropdownMenuGroup className="space-y-0.5">
               <DropdownMenuItem 
                 className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors cursor-pointer"
@@ -195,7 +195,7 @@ export function NavUser({
                 <span className="text-sm font-medium">Settings</span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator className="bg-indigo-50" />
+            <DropdownMenuSeparator className="bg-purple-100" />
             <DropdownMenuGroup className="space-y-0.5">
               <DropdownMenuItem className="gap-3 py-2 px-3 rounded-lg focus:bg-slate-50 transition-colors">
                 <HelpCircle className="size-4 text-muted-foreground" />

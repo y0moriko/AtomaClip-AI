@@ -3,8 +3,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { getServerUser } from "@/lib/auth-helpers";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,55 +11,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-async function getUser(cookieStore: any, authHeader?: string) {
-  const options: any = {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    }
-  }
-
-  if (cookieStore) {
-    options.cookies = {
-      getAll() {
-        return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
-      },
-    }
-  }
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    options
-  )
-
-  if (authHeader) {
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-    if (user) return user
-  }
-
-  if (cookieStore) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) return user
-  }
-
-  return null
-}
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    let cookieStore = null;
-    try {
-      cookieStore = cookies()
-    } catch (e) {}
-
-    const authHeader = cookies().get('sb-access-token') ? undefined : undefined;
-    const user = await getUser(cookieStore)
+    const user = await getServerUser(req);
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });

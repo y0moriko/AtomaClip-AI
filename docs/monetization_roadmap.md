@@ -21,6 +21,7 @@ Since many academic freelancers in the PH are students, we must apply **Purchasi
 *   **PH Freelancer Plan:** ₱399/month (approx. $7.00).
 *   **Payment Methods:** Integrate **GCash/Maya** (via Stripe or PayMongo) as these are the primary tools for PH students.
 
+
 ---
 
 ## 2. The "Power Researcher" Conversion Funnel

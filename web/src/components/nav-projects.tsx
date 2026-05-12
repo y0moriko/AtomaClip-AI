@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import {
   Folder,
   Forward,
@@ -150,7 +151,7 @@ export function NavProjects({
         {projects.map((item) => (
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton asChild>
-              <a href={item.url} className="flex items-center justify-between w-full">
+              <Link href={item.url} className="flex items-center justify-between w-full">
                 <div className="flex items-center gap-2">
                   <item.icon />
                   <span>{item.name}</span>
@@ -160,7 +161,7 @@ export function NavProjects({
                     {item.badge}
                   </span>
                 )}
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -175,10 +176,10 @@ export function NavProjects({
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem asChild>
-                  <a href={item.url}>
+                  <Link href={item.url}>
                     <Folder className="text-muted-foreground" />
                     <span>View Collection</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Forward className="text-muted-foreground" />

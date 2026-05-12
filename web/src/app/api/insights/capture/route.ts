@@ -3,8 +3,7 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { getServerUser } from "@/lib/auth-helpers";
 import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary, extractCitationMetadata, type CitationMetadata } from "@/lib/openrouter";
 import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
@@ -14,55 +13,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 
-async function getUser(cookieStore: any, authHeader?: string) {
-  console.log("getUser - authHeader present:", !!authHeader)
-  
-  const options: any = {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    }
-  }
-
-  if (cookieStore) {
-    options.cookies = {
-      getAll() {
-        return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
-      },
-    }
-  }
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    options
-  )
-
-  if (authHeader) {
-    const token = authHeader.replace('Bearer ', '')
-    console.log("getUser - testing token (first 10 chars):", token.substring(0, 10))
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-    if (error) {
-      console.error("getUser - Supabase Auth Error:", error.message)
-    }
-    if (user) {
-      console.log("getUser - Auth success for:", user.email)
-      return user
-    }
-  }
-
-  if (cookieStore) {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    if (user) {
-      console.log("getUser - Cookie auth success for:", user.email)
-      return user
-    }
-  }
-
-  console.warn("getUser - No valid user found")
-  return null
-}
-
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
@@ -71,15 +21,7 @@ export async function POST(req: Request) {
   let aiStatus = "success";
   
   try {
-    let cookieStore = null;
-    try {
-      cookieStore = cookies()
-    } catch (e) {}
-    
-    const authHeader = req.headers.get('Authorization')
-    console.log("Capture - Auth header:", authHeader)
-    const user = await getUser(cookieStore, authHeader || undefined)
-    console.log("Capture - User:", user)
+    const user = await getServerUser(req);
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });

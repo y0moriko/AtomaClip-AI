@@ -2,26 +2,12 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
+import { getServerUser } from "@/lib/auth-helpers";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const cookieStore = cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
-          },
-        },
-      }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = await getServerUser(req);
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Use upsert to handle race conditions where multiple requests try to create the same user
