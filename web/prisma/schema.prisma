@@ -17,6 +17,8 @@ model User {
   email             String            @unique
   subscriptionTier  String            @default("free") // 'free' or 'pro'
   slackWebhookUrl   String?
+  emailDigest       Boolean           @default(true) // Weekly digest emails
+  emailMarketing    Boolean           @default(false) // Marketing/promotional emails
   workspaces        WorkspaceMember[]
   insights          Insight[]
   createdAt         DateTime          @default(now())
@@ -78,6 +80,11 @@ model Insight {
   
   // Array of tags for easier querying in some cases
   tags          String[] @default([])
+  
+  // Auto-citation fields
+  doi           String?
+  authors       String?
+  publicationDate String?
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

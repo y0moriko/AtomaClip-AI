@@ -3,9 +3,8 @@ export const runtime = "nodejs";
 
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
-import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary } from "@/lib/openrouter";
+import { getServerUser } from "@/lib/auth-helpers";
+import { getOpenRouterEmbedding, getOpenRouterTags, getOpenRouterSummary, extractCitationMetadata, type CitationMetadata } from "@/lib/openrouter";
 import { getOrCreatePersonalWorkspace } from "@/lib/workspaces";
 
 const corsHeaders = {
@@ -13,55 +12,6 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
-
-async function getUser(cookieStore: any, authHeader?: string) {
-  console.log("getUser - authHeader present:", !!authHeader)
-  
-  const options: any = {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    }
-  }
-
-  if (cookieStore) {
-    options.cookies = {
-      getAll() {
-        return cookieStore.getAll().map(({ name, value }: any) => ({ name, value }))
-      },
-    }
-  }
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    options
-  )
-
-  if (authHeader) {
-    const token = authHeader.replace('Bearer ', '')
-    console.log("getUser - testing token (first 10 chars):", token.substring(0, 10))
-    const { data: { user }, error } = await supabase.auth.getUser(token)
-    if (error) {
-      console.error("getUser - Supabase Auth Error:", error.message)
-    }
-    if (user) {
-      console.log("getUser - Auth success for:", user.email)
-      return user
-    }
-  }
-
-  if (cookieStore) {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    if (user) {
-      console.log("getUser - Cookie auth success for:", user.email)
-      return user
-    }
-  }
-
-  console.warn("getUser - No valid user found")
-  return null
-}
 
 export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
@@ -71,15 +21,7 @@ export async function POST(req: Request) {
   let aiStatus = "success";
   
   try {
-    let cookieStore = null;
-    try {
-      cookieStore = cookies()
-    } catch (e) {}
-    
-    const authHeader = req.headers.get('Authorization')
-    console.log("Capture - Auth header:", authHeader)
-    const user = await getUser(cookieStore, authHeader || undefined)
-    console.log("Capture - User:", user)
+    const user = await getServerUser(req);
     
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
@@ -136,13 +78,14 @@ export async function POST(req: Request) {
     let tags: string[] = ["research"];
     let embedding: number[] | null = null;
     let finalNote = user_note || "";
+    let citationMetadata: CitationMetadata = { doi: null, authors: null, publicationDate: null };
 
     try {
-      // Use allSettled to be resilient to partial AI failures (e.g. rate limits)
       const results = await Promise.allSettled([
         getOpenRouterTags(content),
         getOpenRouterEmbedding(content),
-        getOpenRouterSummary(content)
+        getOpenRouterSummary(content),
+        extractCitationMetadata(content, source_url || "")
       ]);
       
       if (results[0].status === "fulfilled") tags = results[0].value;
@@ -159,6 +102,10 @@ export async function POST(req: Request) {
         finalNote = user_note && user_note.trim() !== "" 
           ? `${user_note}\n\n${aiPart}`
           : aiPart;
+      }
+
+      if (results[3].status === "fulfilled" && results[3].value) {
+        citationMetadata = results[3].value;
       }
 
       if (results.some(r => r.status === "rejected")) {
@@ -179,11 +126,11 @@ export async function POST(req: Request) {
             INSERT INTO insights (
               id, content, "contextBefore", "contextAfter", "userNote", 
               "sourceUrl", "pageTitle", tags, "userId", "workspaceId", "projectId", "createdAt", "updatedAt",
-              embedding
+              embedding, doi, authors, "publicationDate"
             ) VALUES (
               ${insightId}, ${content}, ${context_before}, ${context_after}, ${finalNote},
               ${source_url}, ${page_title}, ${tags}, ${dbUser.id}, ${personalWorkspace.id}, ${project_id || null}, NOW(), NOW(),
-              CAST(${embedding}::float8[] AS vector)
+              CAST(${embedding}::float8[] AS vector), ${citationMetadata.doi}, ${citationMetadata.authors}, ${citationMetadata.publicationDate}
             )
           `;
         } catch (embedError: any) {
@@ -204,6 +151,9 @@ export async function POST(req: Request) {
             sourceUrl: source_url,
             pageTitle: page_title,
             tags,
+            doi: citationMetadata.doi,
+            authors: citationMetadata.authors,
+            publicationDate: citationMetadata.publicationDate,
             userId: dbUser.id,
             workspaceId: personalWorkspace.id,
             projectId: project_id || null

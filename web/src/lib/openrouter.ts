@@ -82,32 +82,44 @@ export async function getOpenRouterSummary(content: string): Promise<string | nu
 /**
  * Generates a deep insight synthesis using Gemini 1.5 Flash via OpenRouter.
  */
-export async function generateDeepInsight(query: string, insights: any[]) {
+export async function generateDeepInsight(query: string, insights: any[], conversationHistory?: {role: 'user' | 'assistant'; content: string}[]) {
   try {
     const openai = getOpenAI();
     const context = insights
       .map((i, idx) => `[Insight ${idx + 1}]: ${i.content}\nSource: ${i.pageTitle || i.sourceUrl}`)
       .join("\n\n");
 
-    const prompt = `
-      You are AtomaClip AI, a researcher's best friend. 
-      The user asked: "${query}"
-      
-      I found the following related "Atomic Clips" from their personal library:
-      
-      ${context}
-      
-      Based ONLY on these clips, provide a concise, high-signal answer to the user's question. 
-      If the clips don't contain enough information to answer, say so honestly.
-      Connect the dots between different clips if possible.
-      Keep it under 150 words. Use Markdown for formatting.
-    `;
+    const systemPrompt = `You are AtomaClip AI, a researcher's intelligent assistant. 
+
+Your role is to synthesize and analyze atomic clips from the user's personal research library.
+
+RESPONSE STYLE:
+- Use bullet points (• or -) for key findings and takeaways
+- Use numbered lists (1., 2., 3.) for sequential steps or ranked items
+- Bold key terms and important concepts
+- Include specific quotes or data points when available from the clips
+- If information is missing from the clips, clearly state what you couldn't find
+- Provide connections between different clips when relevant
+- Keep explanations thorough but focused on actionable insights
+
+STRUCTURE your responses as:
+• **Key Finding/Overview**: Brief summary
+• **Detailed Points**: 3-5 bullet points with specifics
+• **Connections**: How insights relate to each other
+• **Gaps**: What wasn't covered (if applicable)`;
+
+    const messages = [
+      { role: "system" as const, content: systemPrompt },
+      { role: "user" as const, content: `Here are my research clips:\n\n${context}` },
+      ...(conversationHistory || []),
+      { role: "user" as const, content: query }
+    ];
 
     const response = await openai.chat.completions.create({
       model: "google/gemini-2.0-flash-001",
-      messages: [
-        { role: "user", content: prompt }
-      ],
+      messages,
+      temperature: 0.7,
+      max_tokens: 1000,
     });
 
     return response.choices[0].message.content;
@@ -148,5 +160,71 @@ export async function suggestProject(content: string, projects: { id: string, na
   } catch (error) {
     console.error("OpenRouter Project Suggestion Error:", error);
     return null;
+  }
+}
+
+export interface CitationMetadata {
+  doi: string | null;
+  authors: string | null;
+  publicationDate: string | null;
+}
+
+/**
+ * Extracts citation metadata (DOI, authors, publication date) from content and source URL.
+ */
+export async function extractCitationMetadata(content: string, sourceUrl: string): Promise<CitationMetadata> {
+  try {
+    const openai = getOpenAI();
+    
+    // First, try to extract DOI from URL directly
+    const urlDois = [
+      /(?:doi\.org\/|doi:)?(10\.\d{4,}\/[^\s]+)/i,
+      /arxiv\.org\/abs\/([\w\.\-]+)/i,
+      /jstor\.org\/stable\/(\d+)/i,
+      /researchgate\.net\/publication\/(\d+)/i,
+    ];
+    
+    let foundDoi: string | null = null;
+    for (const regex of urlDois) {
+      const match = sourceUrl.match(regex);
+      if (match) {
+        foundDoi = match[1];
+        break;
+      }
+    }
+    
+    const prompt = `
+      You are a citation metadata extractor. Analyze the content and URL below and extract citation information.
+      
+      Content (first 500 chars): "${content.slice(0, 500)}"
+      Source URL: "${sourceUrl}"
+      ${foundDoi ? `DOI found in URL: ${foundDoi}` : ''}
+      
+      Extract the following and return as JSON:
+      {
+        "doi": "The DOI if found in the content or URL, otherwise null",
+        "authors": "Author names (e.g., 'John Smith, Jane Doe' or 'Smith et al.'), null if not found",
+        "publicationDate": "Publication date in ISO format (YYYY-MM-DD) or simple year (YYYY), null if not found"
+      }
+      
+      Be conservative - only extract what is explicitly stated or can be reliably inferred.`;
+
+    const response = await openai.chat.completions.create({
+      model: "google/gemini-2.0-flash-001",
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    });
+
+    const contentStr = response.choices[0].message.content || '{}';
+    const data = JSON.parse(contentStr);
+    
+    return {
+      doi: foundDoi || data.doi || null,
+      authors: data.authors || null,
+      publicationDate: data.publicationDate || null,
+    };
+  } catch (error) {
+    console.error("OpenRouter Citation Extraction Error:", error);
+    return { doi: null, authors: null, publicationDate: null };
   }
 }

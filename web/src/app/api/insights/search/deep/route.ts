@@ -33,13 +33,13 @@ export async function POST(req: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
 
-    const { query, insights } = await req.json();
+    const { query, insights, conversationHistory } = await req.json();
 
     if (!query || !insights || !Array.isArray(insights)) {
       return NextResponse.json({ error: "Query and insights are required" }, { status: 400, headers: corsHeaders });
     }
 
-    const answer = await generateDeepInsight(query, insights);
+    const answer = await generateDeepInsight(query, insights, conversationHistory);
     
     if (!answer) {
       return NextResponse.json({ error: "OpenRouter failed to generate an answer" }, { status: 500, headers: corsHeaders });
